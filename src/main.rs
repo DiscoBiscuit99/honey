@@ -1,4 +1,4 @@
-use functor::{lexer, parser};
+use honey::{lexer, parser};
 
 const TEST_SRC: &'static str = r#"
     let code_name: int = 2;

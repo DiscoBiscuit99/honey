@@ -1,33 +1,7 @@
-use crate::lexer::tokens::{DataType, Identifier, Keyword, Literal, Special, Token};
+use crate::lexer::tokens::{Keyword, Special, Token};
 
-#[derive(Debug, PartialEq)]
-pub enum SyntaxTree {
-    Literal(Literal),
-    Statement(Statement),
-    StatementList { statements: Vec<Statement> },
-    Expression(Expression),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Expression {
-    Literal(Literal),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Statement {
-    Declaration {
-        keyword: Keyword,
-        identifier: Identifier,
-        type_annotation: TypeAnnotation,
-        expression: Expression,
-    },
-}
-
-#[derive(Debug, PartialEq)]
-pub struct TypeAnnotation {
-    prefix: Special,
-    data_type: DataType,
-}
+mod types;
+use types::*;
 
 /// Parses the given tokens and outputs an abstract syntax tree.
 pub fn parse(tokens: Vec<Token>) -> SyntaxTree {
@@ -206,7 +180,29 @@ mod tests {
 
     #[test]
     fn parse() {
-        unimplemented!();
+        let tokens = vec![
+            Token::Keyword(Keyword::Let),
+            Token::Identifier(Identifier("code_name".to_string())),
+            Token::Special(Special::Colon),
+            Token::DataType(DataType::Int),
+            Token::Special(Special::Assignment),
+            Token::Literal(Literal::Int(3)),
+            Token::Special(Special::StatementStop),
+        ];
+
+        let tree = super::parse(tokens);
+
+        let expected = SyntaxTree::Statement(Statement::Declaration {
+            keyword: Keyword::Let,
+            identifier: Identifier("code_name".to_string()),
+            type_annotation: super::TypeAnnotation {
+                prefix: Special::Colon,
+                data_type: DataType::Int,
+            },
+            expression: Expression::Literal(Literal::Int(3)),
+        });
+
+        assert_eq!(tree, expected);
     }
 
     #[test]

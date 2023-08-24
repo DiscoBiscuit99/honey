@@ -5,6 +5,11 @@ Done parsing:
 
 Diagram: lexer -> parser -> (type checker) -> code generation -> runtime
 
+Ideas for optimization:
+- Parsing:
+    - provide alternative procedures that doesn't wrap the output in a syntax tree structure.
+        - (this way, no unnecessary wrapping and unwrapping is required.)
+
 ```bnf
 <program> ::= <statement_list>
 
