@@ -2,6 +2,7 @@ Done parsing:
 - literal
 - declaration
 - statement
+- statement list
 
 Diagram: lexer -> parser -> (type checker) -> code generation -> runtime
 
@@ -23,7 +24,11 @@ Ideas for optimization:
 
 <type_list> ::= <type> | <type> "," <type_list>
 
-<expression> ::= <literal> | <function_call> | <block>
+<expression> ::= <term> | <expression> "+" <term> | <expression> "-" <term>
+
+<term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
+
+<factor> ::= <literal> | <function_call> | <block> | "(" <expression> ")"
 
 <function_call> ::= <identifier> "(" <expression_list> ")"
 

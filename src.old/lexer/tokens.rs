@@ -24,6 +24,8 @@ pub enum Special {
     Colon,
     StatementStop,
     Assignment,
+    LeftParenthesis,
+    RightParenthesis,
 }
 
 #[derive(Debug, Clone, PartialEq)]

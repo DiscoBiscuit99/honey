@@ -1,14 +1,19 @@
-use honey::{lexer, parser};
+use honey::parser::*;
+use honey::syntax::*;
 
 const TEST_SRC: &'static str = r#"
-    let code_name: int = 2;
-    let test: float = 2.3;
+    1 + 2 - 3
 "#;
 
 fn main() {
-    let tokens = lexer::lex(TEST_SRC);
-    println!("\nGenerated tokens:\n{tokens:?}");
+    let tokens = vec![
+        Token::Literal(Literal::Number(Number::Int(1))),
+        Token::Plus,
+        Token::Literal(Literal::Number(Number::Int(2))),
+        Token::Minus,
+        Token::Literal(Literal::Number(Number::Int(3))),
+    ];
 
-    let ast = parser::parse(tokens);
-    println!("\nGenerated parse tree:\n{ast:#?}");
+    let tree = parse(&tokens);
+    println!("{tree:#?}");
 }

@@ -1,270 +1,266 @@
-use crate::lexer::tokens::{Keyword, Special, Token};
+use crate::syntax::*;
 
-mod types;
-use types::*;
+mod errors;
+use errors::*;
 
-/// Parses the given tokens and outputs an abstract syntax tree.
-pub fn parse(tokens: Vec<Token>) -> SyntaxTree {
-    parse_program(tokens)
+pub fn parse(tokens: &Tokens) -> Result<SyntaxTree, ParsingError> {
+    let (tree, _) = parse_expression(tokens)?;
+    Ok(tree)
 }
 
-/// Takes a collection of tokens and produces an abstract syntax tree representing the whole
-/// program.
-fn parse_program(tokens: Vec<Token>) -> SyntaxTree {
-    let (tree, _) = parse_statement_list(tokens);
-    tree
-}
+fn parse_expression(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
+    let (left_term, mut remaining_tokens) = parse_term(tokens)?;
 
-fn parse_statement_list(tokens: Vec<Token>) -> (SyntaxTree, Vec<Token>) {
-    let mut statements = vec![];
+    // Unwrap the term.
+    let mut left_term = if let SyntaxTree::Term(term) = left_term {
+        Ok(Expression::Term(term))
+    } else {
+        Err(ParsingError::ExpectedTerm {
+            found: Some(left_term),
+        })
+    }?;
 
-    let (statement_tree, tokens) = parse_statement(tokens);
-    let statement = match statement_tree {
-        SyntaxTree::Statement(statement) => statement,
-        _ => panic!("Failed to parse statement list: not a statement"),
-    };
+    // Loop through and apply as many "+" or "-" as possible
+    while let Some(token) = remaining_tokens.get(0) {
+        match token {
+            Token::Plus => {
+                // Remove the operator token
+                let _ = remaining_tokens.remove(0);
 
-    statements.push(statement);
+                // Parse the next term
+                let (right_term, new_remaining_tokens) = parse_term(&remaining_tokens)?;
 
-    if !tokens.is_empty() {
-        let (statements_tree, _) = parse_statement_list(tokens.clone());
-        let mut more_statements = match statements_tree {
-            SyntaxTree::StatementList { statements } => statements,
-            _ => panic!("Failed to parse statement list, expected more statements"),
-        };
-        statements.append(&mut more_statements);
+                // Update remaining_tokens
+                remaining_tokens = new_remaining_tokens;
+
+                // Unwrap the term.
+                let right_term = if let SyntaxTree::Term(term) = right_term {
+                    Ok(term)
+                } else {
+                    Err(ParsingError::ExpectedTerm {
+                        found: Some(right_term),
+                    })
+                }?;
+
+                // Update the left_term to include the new operation and right term
+                left_term = Expression::Sum {
+                    augend: Box::new(left_term),
+                    addend: right_term,
+                };
+            }
+            Token::Minus => {
+                // Remove the operator token
+                let _ = remaining_tokens.remove(0);
+
+                // Parse the next term
+                let (right_term, new_remaining_tokens) = parse_term(&remaining_tokens)?;
+
+                // Update remaining_tokens
+                remaining_tokens = new_remaining_tokens;
+
+                // Unwrap the term.
+                let right_term = if let SyntaxTree::Term(term) = right_term {
+                    Ok(term)
+                } else {
+                    Err(ParsingError::ExpectedTerm {
+                        found: Some(right_term),
+                    })
+                }?;
+
+                // Update the left_term to include the new operation and right term
+                left_term = Expression::Difference {
+                    minuend: Box::new(left_term),
+                    subtrahend: right_term,
+                };
+            }
+            // Break if we find a token that isn't a '+' or '-'
+            _ => break,
+        }
     }
 
-    let tree = SyntaxTree::StatementList { statements };
+    let subtree = SyntaxTree::Expression(left_term);
 
-    (tree, tokens)
+    Ok((subtree, remaining_tokens))
 }
 
-fn parse_statement(tokens: Vec<Token>) -> (SyntaxTree, Vec<Token>) {
-    parse_declaration(tokens)
+fn parse_term(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
+    let mut tokens_iter = tokens.iter().peekable();
+
+    let _ = tokens_iter
+        .peek()
+        .ok_or(ParsingError::ExpectedTerm { found: None })?;
+
+    let (subtree, remaining_tokens) = parse_factor(tokens)?;
+
+    let term = if let SyntaxTree::Factor(fac) = subtree {
+        Ok(SyntaxTree::Term(Term::Factor(fac)))
+    } else {
+        Err(ParsingError::ExpectedFactor {
+            found: Some(subtree),
+        })
+    }?;
+
+    Ok((term, remaining_tokens))
 }
 
-/// Takes a collection of tokens and produces a declaration tree.
-fn parse_declaration(tokens: Vec<Token>) -> (SyntaxTree, Vec<Token>) {
-    let mut tokens = tokens.iter();
+fn parse_factor(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
+    let mut tokens_iter = tokens.iter().peekable();
 
-    // Parse the "let" keyword first.
-    let let_keyword = tokens
-        .next()
-        .expect("Failed to parse declaration tree: empty token stream");
+    let next = tokens_iter
+        .peek()
+        .ok_or(ParsingError::ExpectedFactor { found: None })?;
 
-    let let_keyword = match let_keyword {
-        Token::Keyword(Keyword::Let) => Keyword::Let,
-        _ => panic!("Failed to parse declaration tree: no \"let\"?"),
-    };
+    let (subtree, remaining_tokens) = if let Token::Literal(_) = next {
+        let (literal, remaining_tokens) = parse_literal(tokens)?;
 
-    // Parse the identifier.
-    let identifier = tokens
-        .next()
-        .expect("Failed to parse declaration tree: no identifier");
+        let subtree = if let SyntaxTree::Literal(lit) = literal {
+            Ok(SyntaxTree::Factor(Factor::Literal(lit)))
+        } else {
+            Err(ParsingError::ExpectedLiteral {
+                found: Some(literal.clone()),
+            })
+        }?;
 
-    let identifier = match identifier {
-        Token::Identifier(ident) => ident,
-        _ => panic!("Failed to parse declaration tree: token not an identifier?"),
-    };
+        Ok((subtree, remaining_tokens))
+    } else {
+        Err(ParsingError::Unknown)
+    }?;
 
-    // Parse the type annotation.
-    let tokens: Vec<Token> = tokens.map(|t| t.clone()).collect();
-    let (type_annotation, tokens) = parse_type_annotation(tokens);
-    let mut tokens = tokens.iter();
-
-    // Parse the assignment.
-    let assignment = tokens
-        .next()
-        .expect("Failed to parse declaration: no assignment token?");
-
-    let _assignment = match assignment {
-        Token::Special(Special::Assignment) => Special::Assignment,
-        _ => panic!("Failed to parse declaration: expected assignment, found {assignment:?}"),
-    };
-
-    // Parse the expression to be assigned.
-    let tokens = tokens.map(|t| t.clone()).collect();
-    let (expression, tokens) = parse_expression(tokens);
-
-    let expression = match expression {
-        SyntaxTree::Expression(exp) => exp,
-        _ => panic!("Failed to parse declaration: expected expression, found {expression:?}"),
-    };
-
-    let mut tokens = tokens.iter();
-
-    // Parse the full stop (the statement stop, i.e. the ';').
-    let _full_stop = tokens
-        .next()
-        .expect("Failed to parse declaration: no full stop?");
-
-    let tree = SyntaxTree::Statement(Statement::Declaration {
-        keyword: let_keyword,
-        identifier: identifier.clone(),
-        type_annotation,
-        expression,
-    });
-
-    let tokens = tokens.map(|t| t.clone()).collect();
-
-    (tree, tokens)
+    Ok((subtree, remaining_tokens))
 }
 
-fn parse_type_annotation(tokens: Vec<Token>) -> (TypeAnnotation, Vec<Token>) {
-    let mut tokens = tokens.iter();
+fn parse_literal(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
+    let mut tokens_iter = tokens.iter().peekable();
 
-    // Parse the special ":" character.
-    let colon = tokens
-        .next()
-        .expect("Failed to parse type annotation: no colon prefix?");
+    // Assert the next token exists.
+    let next = tokens_iter
+        .peek()
+        .ok_or(ParsingError::ExpectedLiteral { found: None })?;
 
-    let colon = match colon {
-        Token::Special(Special::Colon) => Special::Colon,
-        _ => panic!("Failed to parse type annotation: wrong prefix {colon:?}"),
-    };
+    // Assert that the next token is the expected token.
+    let (subtree, remaining_tokens) = if let Token::Literal(Literal::Number(_)) = next {
+        // parse number
+        parse_number(tokens)
+    } else {
+        Err(ParsingError::ExpectedToken(ExpectedToken::Literal {
+            found: Some((*next).clone()),
+        }))
+    }?;
 
-    // Parse the type.
-    let data_type = tokens
-        .next()
-        .expect("Failed to parse type annotation: no data type?");
-
-    let data_type = match data_type {
-        Token::DataType(d_type) => d_type,
-        _ => panic!("Failed to parse type annotation: not a data type?"),
-    };
-
-    let type_annotation = TypeAnnotation {
-        prefix: colon,
-        data_type: data_type.clone(),
-    };
-
-    let tokens = tokens.map(|t| t.clone()).collect();
-
-    (type_annotation, tokens)
+    Ok((subtree, remaining_tokens))
 }
 
-fn parse_expression(tokens: Vec<Token>) -> (SyntaxTree, Vec<Token>) {
-    let (literal, tokens) = parse_literal(tokens);
+/// Parses a number literal and returns it as well as the remaining tokens.
+/// Returns a parsing error if failed.
+fn parse_number(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
+    let mut tokens_iter = tokens.iter();
 
-    let literal = match literal {
-        SyntaxTree::Literal(lit) => lit,
-        _ => panic!(),
-    };
-    let tree = SyntaxTree::Expression(Expression::Literal(literal));
+    // Assert the next token exists.
+    let next = tokens_iter
+        .next()
+        .ok_or(ParsingError::ExpectedNumber { found: None })?;
 
-    (tree, tokens)
-}
+    // Assert that the next token is the expected token.
+    let num = if let Token::Literal(Literal::Number(num)) = next {
+        Ok(num.clone())
+    } else {
+        Err(ParsingError::ExpectedToken(ExpectedToken::Number {
+            found: Some(next.clone()),
+        }))
+    }?;
 
-/// Takes a collection of tokens and produces a literal tree.
-fn parse_literal(tokens: Vec<Token>) -> (SyntaxTree, Vec<Token>) {
-    let mut tokens = tokens.iter();
+    // Wrap it up in a syntax tree.
+    let subtree = SyntaxTree::Literal(Literal::Number(num));
 
-    let token = tokens.next().expect("Empty token stream?");
-    let lit = match token {
-        Token::Literal(lit) => lit.clone(),
-        _ => panic!("Expected literal, found {token:?}"),
-    };
+    // Collect the remaining tokens
+    let remaining_tokens = tokens_iter.cloned().collect();
 
-    let tree = SyntaxTree::Literal(lit);
-    let tokens = tokens.map(|t| t.clone()).collect();
-
-    (tree, tokens)
+    Ok((subtree, remaining_tokens))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::lexer::tokens::{DataType, Identifier, Keyword, Literal, Special, Token};
-
-    use super::{Expression, Statement, SyntaxTree};
+    use crate::syntax::*;
 
     #[test]
-    fn parse() {
-        let tokens = vec![
-            Token::Keyword(Keyword::Let),
-            Token::Identifier(Identifier("code_name".to_string())),
-            Token::Special(Special::Colon),
-            Token::DataType(DataType::Int),
-            Token::Special(Special::Assignment),
-            Token::Literal(Literal::Int(3)),
-            Token::Special(Special::StatementStop),
-        ];
+    fn parse_number() {
+        // Arrange
+        let tokens = vec![Token::Literal(Literal::Number(Number::Int(3)))];
+        let expected = SyntaxTree::Literal(Literal::Number(Number::Int(3)));
 
-        let tree = super::parse(tokens);
+        // Act
+        let (tree, _tokens) = super::parse_number(&tokens).expect("failed to parse number");
 
-        let expected = SyntaxTree::Statement(Statement::Declaration {
-            keyword: Keyword::Let,
-            identifier: Identifier("code_name".to_string()),
-            type_annotation: super::TypeAnnotation {
-                prefix: Special::Colon,
-                data_type: DataType::Int,
-            },
-            expression: Expression::Literal(Literal::Int(3)),
-        });
-
-        assert_eq!(tree, expected);
-    }
-
-    #[test]
-    fn parse_declaration() {
-        let tokens = vec![
-            Token::Keyword(Keyword::Let),
-            Token::Identifier(Identifier("code_name".to_string())),
-            Token::Special(Special::Colon),
-            Token::DataType(DataType::Int),
-            Token::Special(Special::Assignment),
-            Token::Literal(Literal::Int(3)),
-            Token::Special(Special::StatementStop),
-        ];
-
-        let (tree, _) = super::parse_declaration(tokens);
-
-        let expected = SyntaxTree::Statement(Statement::Declaration {
-            keyword: Keyword::Let,
-            identifier: Identifier("code_name".to_string()),
-            type_annotation: super::TypeAnnotation {
-                prefix: Special::Colon,
-                data_type: DataType::Int,
-            },
-            expression: Expression::Literal(Literal::Int(3)),
-        });
-
-        assert_eq!(tree, expected);
-    }
-
-    #[test]
-    fn parse_expression() {
-        let tokens = vec![Token::Literal(Literal::Int(314))];
-        let (tree, _) = super::parse_expression(tokens);
-
-        let expected = super::SyntaxTree::Expression(Expression::Literal(Literal::Int(314)));
-
-        assert_eq!(tree, expected);
-
-        let tokens = vec![Token::Literal(Literal::Int(314))];
-        let (tree, _) = super::parse_expression(tokens);
-
-        let expected = super::SyntaxTree::Expression(Expression::Literal(Literal::Int(314)));
-
+        // Assert
         assert_eq!(tree, expected);
     }
 
     #[test]
     fn parse_literal() {
-        use crate::lexer::tokens::{Literal, Token};
+        // Arrange
+        let tokens = vec![Token::Literal(Literal::Number(Number::Int(3)))];
+        let expected = SyntaxTree::Literal(Literal::Number(Number::Int(3)));
 
-        let tokens = vec![Token::Literal(Literal::Int(314))];
-        let (tree, _) = super::parse_literal(tokens);
+        // Act
+        let (tree, _tokens) = super::parse_literal(&tokens).expect("failed to parse literal");
 
-        let expected = super::SyntaxTree::Literal(Literal::Int(314));
-
+        // Assert
         assert_eq!(tree, expected);
+    }
 
-        let tokens = vec![Token::Literal(Literal::Float(3.14))];
-        let (tree, _) = super::parse_literal(tokens);
+    #[test]
+    fn parse_factor() {
+        // Arrange
+        let tokens = vec![Token::Literal(Literal::Number(Number::Int(3)))];
+        let expected = SyntaxTree::Factor(Factor::Literal(Literal::Number(Number::Int(3))));
 
-        let expected = super::SyntaxTree::Literal(Literal::Float(3.14));
+        // Act
+        let (tree, _tokens) = super::parse_factor(&tokens).expect("failed to parse factor");
 
+        // Assert
+        assert_eq!(tree, expected);
+    }
+
+    #[test]
+    fn parse_term() {
+        // Arrange
+        let tokens = vec![Token::Literal(Literal::Number(Number::Int(3)))];
+        let expected = SyntaxTree::Term(Term::Factor(Factor::Literal(Literal::Number(
+            Number::Int(3),
+        ))));
+
+        // Act
+        let (tree, _tokens) = super::parse_term(&tokens).expect("failed to parse term");
+
+        // Assert
+        assert_eq!(tree, expected);
+    }
+
+    #[test]
+    fn parse_expression() {
+        // Arrange
+        let tokens = vec![
+            Token::Literal(Literal::Number(Number::Int(3))),
+            Token::Plus,
+            Token::Literal(Literal::Number(Number::Int(3))),
+            Token::Minus,
+            Token::Literal(Literal::Number(Number::Int(2))),
+        ];
+
+        let expected = SyntaxTree::Expression(Expression::Difference {
+            minuend: Box::new(Expression::Sum {
+                augend: Box::new(Expression::Term(Term::Factor(Factor::Literal(
+                    Literal::Number(Number::Int(3)),
+                )))),
+                addend: Term::Factor(Factor::Literal(Literal::Number(Number::Int(3)))),
+            }),
+            subtrahend: Term::Factor(Factor::Literal(Literal::Number(Number::Int(2)))),
+        });
+
+        // Act
+        let (tree, _tokens) = super::parse_expression(&tokens).expect("failed to parse expression");
+
+        // Assert
         assert_eq!(tree, expected);
     }
 }
