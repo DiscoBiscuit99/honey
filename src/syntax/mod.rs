@@ -1,3 +1,6 @@
+pub mod tokens;
+use tokens::*;
+
 /// Wrapper component.
 /// In this way, when parsing, everything can just return node of this type.
 #[derive(Debug, Clone, PartialEq)]
@@ -48,14 +51,5 @@ pub enum Literal {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Number {
     Int(i64),
-    Float(i64),
+    Float(f64),
 }
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Token {
-    Literal(Literal),
-    Plus,
-    Minus,
-}
-
-pub type Tokens = Vec<Token>;

@@ -1,4 +1,4 @@
-use crate::syntax::*;
+use crate::syntax::{tokens::*, *};
 
 mod errors;
 use errors::*;
@@ -180,7 +180,7 @@ fn parse_number(tokens: &Tokens) -> Result<(SyntaxTree, Tokens), ParsingError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::*;
+    use crate::syntax::{tokens::*, *};
 
     #[test]
     fn parse_number() {
