@@ -1,4 +1,4 @@
-# honey
+# Honey
 
 Rules of the language:
 
