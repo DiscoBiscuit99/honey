@@ -1,6 +1,6 @@
 # Honey
 
-Rules of the language:
+**Syntax**:
 
 ```bnf
 <program> ::= <statement_list>
