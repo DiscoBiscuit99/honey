@@ -1,3 +1,5 @@
+use std::{fs::OpenOptions, io::prelude::*, process::Command};
+
 use crate::syntax::*;
 
 pub mod arch;
@@ -13,7 +15,6 @@ pub struct Assembler<A: Arch> {
 }
 
 impl<A: Arch> Assembler<A> {
-    // You can now delegate to self.arch for architecture-specific code generation
     pub fn new(arch: A) -> Assembler<A> {
         Assembler {
             arch,
@@ -22,7 +23,7 @@ impl<A: Arch> Assembler<A> {
     }
 
     pub fn emit(&mut self, asm: &str) {
-        self.lines.push("  ".to_string() + asm)
+        self.lines.push(asm.to_string())
     }
 
     pub fn assemble_ast(&mut self, ast: &impl Codegen<A>) {
@@ -33,9 +34,49 @@ impl<A: Arch> Assembler<A> {
         self.lines.push(self.arch.emit_footer());
     }
 
+    pub fn compile(&self) {
+        self.write_to_file("testing.asm");
+
+        // nasm -g -F dwarf source.asm -o source.o
+
+        Command::new("nasm")
+            .arg("-f")
+            .arg("elf64") // specify the format
+            .arg("-g")
+            .arg("-F")
+            .arg("dwarf")
+            .arg("testing.asm")
+            .arg("-o")
+            .arg("testing.o")
+            .output()
+            .expect("Failed to execute NASM");
+
+        // Link the object file to create the executable
+        Command::new("ld")
+            .arg("testing.o")
+            .arg("-o")
+            .arg("testing")
+            .output()
+            .expect("Failed to execute LD");
+    }
+
     pub fn display(&self) {
         for line in &self.lines {
             println!("{}", line);
+        }
+    }
+
+    fn write_to_file(&self, filename: &str) {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(filename)
+            .unwrap();
+
+        for line in &self.lines {
+            if let Err(e) = writeln!(file, "{}", line) {
+                eprintln!("Couldn't write to file: {}", e);
+            }
         }
     }
 }
@@ -81,14 +122,25 @@ impl<A: Arch> Codegen<A> for Expression {
             }
             Expression::Sum { augend, addend } => {
                 asm.emit("; Start of sum expression");
-                augend.to_asm(asm);
-                asm.emit("push rax"); // Save the result of the left-hand expression
                 addend.to_asm(asm);
-                asm.emit("pop rbx"); // Pop the left-hand result into rbx
-                asm.emit("add rax, rbx"); // Perform the addition
+                asm.emit(&asm.arch.emit_save_register("rax"));
+                augend.to_asm(asm);
+                asm.emit(&asm.arch.emit_restore_register("rbx"));
+                asm.emit(&asm.arch.emit_add("rax", "rbx"));
                 asm.emit("; End of sum expression");
             }
-            _ => unimplemented!(),
+            Expression::Difference {
+                minuend,
+                subtrahend,
+            } => {
+                asm.emit("; Start of subtraction expression");
+                subtrahend.to_asm(asm);
+                asm.emit(&asm.arch.emit_save_register("rax"));
+                minuend.to_asm(asm);
+                asm.emit(&asm.arch.emit_restore_register("rbx"));
+                asm.emit(&asm.arch.emit_sub("rax", "rbx"));
+                asm.emit("; End of subtraction expression");
+            }
         }
     }
 }
@@ -97,6 +149,7 @@ impl<A: Arch> Codegen<A> for SyntaxTree {
     fn to_asm(&self, asm: &mut Assembler<A>) {
         match self {
             SyntaxTree::Expression(expression) => expression.to_asm(asm),
+            SyntaxTree::Term(term) => term.to_asm(asm),
             _ => unimplemented!(),
         }
     }
