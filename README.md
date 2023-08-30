@@ -2,7 +2,14 @@
 
 A *very sophisticated*, compiled programming language made for household use alone. 🐝
 
-Draft:
+**Features**: #todo
+
+- [ ] [[Constant propagation]]
+- [ ] [[Single static assignment]]
+- [ ] [[Dead code elimination]]
+- [ ] Interoperability with C
+
+**Example code**:
 
 ```honey
 # this is a comment...
@@ -33,7 +40,7 @@ let double_me_and_add_pi: (x: number) -> number = {
 }, where pi: number = 3.14;
 ```
 
-**Syntax**:
+**Syntax** ([[Backus-Naur form]]):
 
 ```bnf
 <program> ::= <statement-list>
@@ -64,3 +71,8 @@ let double_me_and_add_pi: (x: number) -> number = {
 
 <block> ::= "{" <statement-list> <return-value> "}"
 ```
+
+**Code generation**:
+
+Implemented with a register machine (as opposed to a stack machine).
+
