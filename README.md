@@ -1,6 +1,6 @@
 # 🍯 Honey
 
-A compiled language.
+A compiled language. 🐝
 
 Draft:
 
