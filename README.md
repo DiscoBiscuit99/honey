@@ -3,31 +3,62 @@
 **Syntax**:
 
 ```bnf
-<program> ::= <statement_list>
+<program> ::= <statement-list>
 
-<statement_list> ::= <statement> ";" | <statement> ";" <statement_list>
+<statement-list> ::= <statement> ";" | <statement> ";" <statement-list>
 
 <statement> ::= <declaration>
 
-<declaration> ::= <declaration-keyword> <identifier> ":" <type> "=" <expression>
+<declaration> ::= <decl-keyword> <identifier> ":" <type> "=" <expression> ";"
 
-<declaration-keyword> ::= "let" | "mut"
+<decl-keyword> ::= "let" | "mut"
 
-<type> ::= "int" | "string" | "bool" | "fn(" <type_list> ") =>" <type>
+<type> ::= <basic-type> | <func-type>
 
-<type_list> ::= <type> | <type> "," <type_list>
+<basic-type> ::= "number"
 
-<expression> ::= <term> | <expression> "+" <term> | <expression> "-" <term>
+<param-list> ::= <identifier> ":" <type> | <identifier> ":" <type> "," <param-list>
+
+<func-type> ::= "(" <param-list> ")" "->" <type>
+
+<expression> ::= <term> | <expression> "+" <term> | <expression> "-"<term> | <block>
 
 <term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
 
-<factor> ::= <literal> | <function_call> | <block> | "(" <expression> ")"
+<factor> ::= <literal>
 
-<function_call> ::= <identifier> "(" <expression_list> ")"
+<return-value> ::= <expression>
 
-<expression_list> ::= <expression> | <expression> "," <expression_list>
+<block> ::= "{" <statement-list> <return-value> "}"
+```
 
-<literal> ::= <number> | <string>
+Draft:
 
-<block> ::= "{" <statement_list> "}"
+```honey
+# this is a comment...
+
+# basic "variable" declarations
+let a: number = 1;      # result: a <- 1
+mut b: number = a + 1;  # result: b <- a + 1
+b += a;                 # result: b <- b + a
+
+# basic (single-variate) function/procedure declarations
+let double_me: (x: number) -> number {
+    x * 2
+};
+
+# multi-variate/single-output function/procedure declarations
+let double_and_add_us: (x: number, y: number) -> number {
+    x * 2 + y * 2
+};
+
+# multi-variate/multi-output function/procedure declarations
+let double_us: (x: number, y: number) -> (number, number) {
+    (x * 2, y * 2)
+};
+
+# maybe even this (?)
+let double_me_and_add_pi: (x: number) -> number = {
+  x * 2 + pi
+}, where pi: number = 3.14;
 ```
