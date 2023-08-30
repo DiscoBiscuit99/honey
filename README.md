@@ -4,9 +4,9 @@ A *very sophisticated*, compiled programming language made for household use alo
 
 **Features**: #todo
 
-- [ ] [[Constant propagation]]
-- [ ] [[Single static assignment]]
-- [ ] [[Dead code elimination]]
+- [ ] Constant propagation
+- [ ] Single static assignment
+- [ ] Dead code elimination
 - [ ] Interoperability with C
 
 **Example code**:
@@ -40,7 +40,7 @@ let double_me_and_add_pi: (x: number) -> number = {
 }, where pi: number = 3.14;
 ```
 
-**Syntax** ([[Backus-Naur form]]):
+**Syntax**:
 
 ```bnf
 <program> ::= <statement-list>
