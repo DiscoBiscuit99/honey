@@ -1,6 +1,6 @@
 # 🍯 Honey
 
-A compiled language. 🐝
+A very sophisticated, compiled programming language made for household use alone. 🐝
 
 Draft:
 
