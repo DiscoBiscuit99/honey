@@ -1,4 +1,4 @@
-# Honey
+# Honey 🐝🍯
 
 **Syntax**:
 
@@ -9,7 +9,9 @@
 
 <statement> ::= <declaration>
 
-<declaration> ::= "let" <identifier> ":" <type> "=" <expression>
+<declaration> ::= <declaration-keyword> <identifier> ":" <type> "=" <expression>
+
+<declaration-keyword> ::= "let" | "mut"
 
 <type> ::= "int" | "string" | "bool" | "fn(" <type_list> ") =>" <type>
 

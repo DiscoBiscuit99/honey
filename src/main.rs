@@ -1,24 +1,18 @@
-use honey::{codegen::arch::x86_64::*, codegen::*, lexer, parser::*};
+use honey::lexer;
 
-const TEST_SRC: &'static str = r#"
-    1 - 2 + 3
+const DECLARATION_SRC: &str = r#"
+let x = 1;  # immutable value
+mut y = 0;  # mutable value
+y += x;     # result: y <- y + x
+"#;
+
+const SIMPLE_FN_SRC: &str = r#"
+let double_me = x: number -> number {
+    x * 2
+}
 "#;
 
 fn main() {
-    let tokens = lexer::lex(TEST_SRC).expect("failed to lex source");
-    let test_ast = parse(&tokens).expect("failed to parse tokens");
-    println!("{test_ast:#?}");
-
-    let mut x86_assembler = Assembler::new(X86_64);
-
-    // let test_ast = SyntaxTree::Term(Term::Quotient {
-    //     dividend: Box::new(Term::Factor(Factor::Literal(Literal::Number(Number::Int(
-    //         4,
-    //     ))))),
-    //     divisor: Factor::Literal(Literal::Number(Number::Int(2))),
-    // });
-
-    x86_assembler.assemble_ast(&test_ast);
-    x86_assembler.display();
-    x86_assembler.compile();
+    let tokens = lexer::lex(DECLARATION_SRC).expect("failed to lex declaration source");
+    dbg!(tokens);
 }

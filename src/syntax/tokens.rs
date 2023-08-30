@@ -1,10 +1,13 @@
-use crate::syntax::*;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-    Literal(Literal),
-    Plus,
-    Minus,
+    Keyword(String),
+    Identifier(String),
+    Colon(String),
+    Type(String),
+    Assignment(String),
+    Number(String),
+    Plus(String),
+    Minus(String),
 }
 
 pub type Tokens = Vec<Token>;

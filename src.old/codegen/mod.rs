@@ -1,48 +1,72 @@
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::process::Command;
+use std::{fs::OpenOptions, io::prelude::*, process::Command};
 
 use crate::syntax::*;
 
-pub struct Assembler {
-    arch: A,
-    lines: Vec<String>,
+pub mod arch;
+use arch::Arch;
+
+pub trait Codegen<A: Arch> {
+    fn to_asm(&self, asm: &mut Assembler<A>);
 }
 
-impl Assembler {
-    pub fn new() -> Assembler {
-        Assembler { lines: Vec::new() }
-    }
+pub struct Assembler<A: Arch> {
+    arch: A,
+    lines: Vec<String>, // to store the emitted assembly lines
+}
 
-    pub fn emit_header(&mut self) {
-        self.emit("; Header");
-        self.emit("section .text");
-        self.emit("global _start");
-        self.emit("_start:");
-        // ... and so on
-    }
-
-    pub fn emit_footer(&mut self) {
-        self.emit("; Footer");
-        self.emit("mov rax, 60"); // return value
-        self.emit("xor rdi, rdi"); // sys_exit system call number
-        self.emit("syscall"); // call kernel
-    }
-
-    pub fn emit_function_prologue(&mut self, name: &str) {
-        self.emit(&format!("{}:", name));
-        // ... set up stack frame etc.
-    }
-
-    pub fn emit_function_epilogue(&mut self) {
-        // ... tear down stack frame etc.
+impl<A: Arch> Assembler<A> {
+    pub fn new(arch: A) -> Assembler<A> {
+        Assembler {
+            arch,
+            lines: vec![],
+        }
     }
 
     pub fn emit(&mut self, asm: &str) {
-        self.lines.push(asm.to_string());
+        self.lines.push(asm.to_string())
     }
 
-    pub fn write_to_file(&self, filename: &str) {
+    pub fn assemble_ast(&mut self, ast: &impl Codegen<A>) {
+        self.lines.push(self.arch.emit_header());
+
+        ast.to_asm(self);
+
+        self.lines.push(self.arch.emit_footer());
+    }
+
+    pub fn compile(&self) {
+        self.write_to_file("testing.asm");
+
+        // nasm -g -F dwarf source.asm -o source.o
+
+        Command::new("nasm")
+            .arg("-f")
+            .arg("elf64") // specify the format
+            .arg("-g")
+            .arg("-F")
+            .arg("dwarf")
+            .arg("testing.asm")
+            .arg("-o")
+            .arg("testing.o")
+            .output()
+            .expect("Failed to execute NASM");
+
+        // Link the object file to create the executable
+        Command::new("ld")
+            .arg("testing.o")
+            .arg("-o")
+            .arg("testing")
+            .output()
+            .expect("Failed to execute LD");
+    }
+
+    pub fn display(&self) {
+        for line in &self.lines {
+            println!("{}", line);
+        }
+    }
+
+    fn write_to_file(&self, filename: &str) {
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -55,104 +79,81 @@ impl Assembler {
             }
         }
     }
-
-    pub fn compile(&self) {
-        Command::new("nasm")
-            .arg("-f")
-            .arg("elf64") // specify the format
-            .arg("output.asm")
-            .output()
-            .expect("Failed to execute NASM");
-
-        // Link the object file to create the executable
-        Command::new("ld")
-            .arg("-o")
-            .arg("output")
-            .arg("output.o")
-            .output()
-            .expect("Failed to execute LD");
-    }
-
-    pub fn ast_to_asm(&mut self, ast: &SyntaxTree) {
-        self.emit(&ast.to_asm());
-    }
 }
 
-impl SyntaxTree {
-    pub fn to_asm(&self) -> String {
+impl<A: Arch> Codegen<A> for Literal {
+    fn to_asm(&self, asm: &mut Assembler<A>) {
         match self {
-            SyntaxTree::Expression(expression) => expression.to_asm(),
-            _ => unimplemented!(),
+            Literal::Number(Number::Int(i)) => {
+                asm.emit(&format!("mov rax, {}", i));
+            }
+            Literal::Number(Number::Float(f)) => unimplemented!(),
         }
     }
 }
 
-impl Literal {
-    pub fn to_asm(&self) -> String {
+impl<A: Arch> Codegen<A> for Factor {
+    fn to_asm(&self, asm: &mut Assembler<A>) {
         match self {
-            Literal::Number(number) => match number {
-                Number::Int(i) => format!("mov rax, {}", i),
-                Number::Float(f) => unimplemented!(),
-            },
-        }
-    }
-}
-
-impl Factor {
-    pub fn to_asm(&self) -> String {
-        match self {
-            Factor::Literal(literal) => literal.to_asm(),
-            _ => unimplemented!(),
-        }
-    }
-}
-
-impl Term {
-    pub fn to_asm(&self) -> String {
-        match self {
-            Term::Factor(factor) => factor.to_asm(),
-            _ => unimplemented!(),
-        }
-    }
-}
-
-impl Expression {
-    pub fn to_asm(&self) -> String {
-        match self {
-            Expression::Term(term) => term.to_asm(),
-            Expression::Sum { augend, addend } => {
-                let augend_asm = augend.to_asm();
-                let addend_asm = addend.to_asm();
-                [
-                    "; Start of sum expression",
-                    &augend_asm,
-                    "push rax", // Save the result of the left-hand expression
-                    &addend_asm,
-                    "pop rbx",      // Pop the left-hand result into rbx
-                    "add rax, rbx", // Perform the addition
-                    "; End of sum expression",
-                ]
-                .join("\n")
+            Factor::Literal(literal) => {
+                literal.to_asm(asm);
             }
             _ => unimplemented!(),
         }
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::syntax::{Literal, Number};
-
-    #[test]
-    fn literal_to_asm() {
-        // Arrange
-        let literal = Literal::Number(Number::Int(3));
-        let expected = "mov rax, 3".to_string();
-
-        // Act
-        let asm = literal.to_asm();
-
-        // Assert
-        assert_eq!(asm, expected);
+impl<A: Arch> Codegen<A> for Term {
+    fn to_asm(&self, asm: &mut Assembler<A>) {
+        match self {
+            Term::Factor(factor) => {
+                factor.to_asm(asm);
+            }
+            _ => unimplemented!(),
+        }
     }
 }
+
+impl<A: Arch> Codegen<A> for Expression {
+    fn to_asm(&self, asm: &mut Assembler<A>) {
+        match self {
+            Expression::Term(term) => {
+                term.to_asm(asm);
+            }
+            Expression::Sum { augend, addend } => {
+                asm.emit("; Start of sum expression");
+                addend.to_asm(asm);
+                asm.emit(&asm.arch.emit_save_register("rax"));
+                augend.to_asm(asm);
+                asm.emit(&asm.arch.emit_restore_register("rbx"));
+                asm.emit(&asm.arch.emit_add("rax", "rbx"));
+                asm.emit("; End of sum expression");
+            }
+            Expression::Difference {
+                minuend,
+                subtrahend,
+            } => {
+                asm.emit("; Start of subtraction expression");
+                subtrahend.to_asm(asm);
+                asm.emit(&asm.arch.emit_save_register("rax"));
+                minuend.to_asm(asm);
+                asm.emit(&asm.arch.emit_restore_register("rbx"));
+                asm.emit(&asm.arch.emit_sub("rax", "rbx"));
+                asm.emit("; End of subtraction expression");
+            }
+        }
+    }
+}
+
+impl<A: Arch> Codegen<A> for SyntaxTree {
+    fn to_asm(&self, asm: &mut Assembler<A>) {
+        match self {
+            SyntaxTree::Expression(expression) => expression.to_asm(asm),
+            SyntaxTree::Term(term) => term.to_asm(asm),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {}
