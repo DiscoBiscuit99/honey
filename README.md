@@ -1,5 +1,7 @@
 # Honey 🐝🍯
 
+A compiled language.
+
 Draft:
 
 ```honey
