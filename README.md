@@ -1,4 +1,4 @@
-# Honey 🍯
+# 🍯 Honey
 
 A compiled language.
 
