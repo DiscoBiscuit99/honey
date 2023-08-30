@@ -38,6 +38,23 @@ let double_us: (x: number, y: number) -> (number, number) {
 let double_me_and_add_pi: (x: number) -> number = {
   x * 2 + pi
 }, where pi: number = 3.14;
+
+# simple struct/record
+let pet: struct = .{
+	name: string,
+	kind: animal_kind,
+	 
+	#! docstring like this?
+	let new: (name: string, kind: animal_kind) -> pet {
+		.{ name: name, kind: kind }
+		# maybe .{ name, kind } if variable names are identical to field names
+	};
+	 
+	#! for self-referencial instances (maybe?)
+	let kind: (self) -> animal_kind {
+		 self.kind
+	}
+};
 ```
 
 **Syntax**:
@@ -45,11 +62,11 @@ let double_me_and_add_pi: (x: number) -> number = {
 ```bnf
 <program> ::= <statement-list>
 
-<statement-list> ::= <statement> ";" | <statement> ";" <statement-list>
+<statement-list> ::= <statement> | <statement> <statement-list>
 
-<statement> ::= <declaration>
+<statement> ::= <declaration> ";"
 
-<declaration> ::= <decl-keyword> <identifier> ":" <type> "=" <expression> ";"
+<declaration> ::= <decl-keyword> <identifier> ":" <type> "=" <expression>
 
 <decl-keyword> ::= "let" | "mut"
 

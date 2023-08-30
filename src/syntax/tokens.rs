@@ -1,13 +1,21 @@
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum TokenKind {
+    IntegerLiteral,
+    Identifier,
+    Keyword,
+    Colon,
+    Assignment,
+    Plus,
+    Minus,
+    LParen,
+    RParen,
+    Eof,
+}
+
 #[derive(Debug, Clone, PartialEq)]
-pub enum Token {
-    Keyword(String),
-    Identifier(String),
-    Colon(String),
-    Type(String),
-    Assignment(String),
-    Number(String),
-    Plus(String),
-    Minus(String),
+pub struct Token {
+    pub kind: TokenKind,
+    pub lexeme: Option<String>,
 }
 
 pub type Tokens = Vec<Token>;

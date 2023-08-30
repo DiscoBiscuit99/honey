@@ -13,6 +13,6 @@ let double_me = x: number -> number {
 "#;
 
 fn main() {
-    let tokens = lexer::lex(DECLARATION_SRC).expect("failed to lex declaration source");
+    let tokens = lexer::lex("let a = 1;").expect("failed to lex declaration source");
     dbg!(tokens);
 }
