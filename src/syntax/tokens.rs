@@ -1,6 +1,12 @@
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TokenKind {
-    IntegerLiteral,
+    Let,
+    DataType,
+    Integer,
+    Float,
+    Number,
+    Comment,
+    Semicolon,
     Identifier,
     Keyword,
     Colon,
@@ -10,6 +16,8 @@ pub enum TokenKind {
     LParen,
     RParen,
     Eof,
+    Times,
+    Divide,
 }
 
 #[derive(Debug, Clone, PartialEq)]

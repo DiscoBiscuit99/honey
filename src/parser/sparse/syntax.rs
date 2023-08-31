@@ -1,66 +1,49 @@
-mod tokens;
-pub use tokens::*;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum SyntaxTree {
-    StatementList { statements: Vec<Statement> },
-    Statement(Statement),
-    Expression(Expression),
-    Declaration(Declaration),
-    Number(Number),
-    Identifier(Identifier),
-    DataType(DataType),
-    Assignment(Assignment),
-    Keyword(Keyword),
-    Term(Term),
-    Factor(Factor),
-    Literal(Literal),
-}
+use crate::syntax::SyntaxTree;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
-    Declaration(Declaration),
+    Declaration(Box<SyntaxTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
-    Term(Term),
+    Term(Box<SyntaxTree>),
     Sum {
-        augend: Box<Expression>,
-        addend: Term,
+        augend: Box<SyntaxTree>,
+        addend: Box<SyntaxTree>,
     },
     Difference {
-        minuend: Box<Expression>,
-        subtrahend: Term,
+        minuend: Box<SyntaxTree>,
+        subtrahend: Box<SyntaxTree>,
     },
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Term {
-    Factor(Factor),
+pub enum SparseTerm {
+    Factor(Box<SyntaxTree>),
     Product {
-        multiplicant: Box<Term>,
-        multiplier: Factor,
+        multiplicant: Box<SyntaxTree>,
+        multiplier: Box<SyntaxTree>,
     },
     Quotient {
-        dividend: Box<Term>,
-        divisor: Factor,
+        dividend: Box<SyntaxTree>,
+        divisor: Box<SyntaxTree>,
     },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Factor {
-    Number(Number),
+    Number(Box<SyntaxTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
-    NumberLiteral(NumberLiteral),
+    NumberLiteral(Box<SyntaxTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NumberLiteral {
-    Number(Number),
+    Number(Box<SyntaxTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -81,11 +64,6 @@ pub struct Declaration {
 pub enum DeclKeyword {
     Let,
     Mut,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Keyword {
-    DeclKeyword(DeclKeyword),
 }
 
 #[derive(Debug, Clone, PartialEq)]

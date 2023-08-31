@@ -82,7 +82,7 @@ let pet: struct = .{
 
 <term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
 
-<factor> ::= <literal>
+<factor> ::= <number>
 
 <return-value> ::= <expression>
 
