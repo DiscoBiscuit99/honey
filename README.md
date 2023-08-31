@@ -41,19 +41,19 @@ let double_me_and_add_pi: (x: number) -> number = {
 
 # simple struct/record
 let pet: struct = .{
-	name: string,
-	kind: animal_kind,
-	 
-	#! docstring like this?
-	let new: (name: string, kind: animal_kind) -> pet {
-		.{ name: name, kind: kind }
-		# maybe .{ name, kind } if variable names are identical to field names
-	};
-	 
-	#! for self-referencial instances (maybe?)
-	let kind: (self) -> animal_kind {
-		 self.kind
-	}
+  name: string,
+  kind: animal_kind,
+   
+  #! docstring like this?
+  let new: (name: string, kind: animal_kind) -> pet {
+  	.{ name: name, kind: kind }
+  	# maybe .{ name, kind } if variable names are identical to field names
+  };
+   
+  #! for self-referencial instances (maybe?)
+  let kind: (self) -> animal_kind {
+  	 self.kind
+  }
 };
 ```
 
