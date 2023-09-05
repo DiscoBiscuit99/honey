@@ -13,11 +13,15 @@ pub enum TokenKind {
     Assignment,
     Plus,
     Minus,
-    LParen,
-    RParen,
+    LeftParenthesis,
+    RightParenthesis,
+    LeftCurly,
+    RightCurly,
     Eof,
     Times,
     Divide,
+    Comma,
+    RightArrow,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -25,5 +29,3 @@ pub struct Token {
     pub kind: TokenKind,
     pub lexeme: Option<String>,
 }
-
-pub type Tokens = Vec<Token>;

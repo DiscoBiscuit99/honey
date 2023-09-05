@@ -1,49 +1,49 @@
-use crate::syntax::SyntaxTree;
+use crate::syntax::ParseTree;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
-    Declaration(Box<SyntaxTree>),
+    Declaration(Box<ParseTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
-    Term(Box<SyntaxTree>),
+    Term(Box<ParseTree>),
     Sum {
-        augend: Box<SyntaxTree>,
-        addend: Box<SyntaxTree>,
+        augend: Box<ParseTree>,
+        addend: Box<ParseTree>,
     },
     Difference {
-        minuend: Box<SyntaxTree>,
-        subtrahend: Box<SyntaxTree>,
+        minuend: Box<ParseTree>,
+        subtrahend: Box<ParseTree>,
     },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SparseTerm {
-    Factor(Box<SyntaxTree>),
+    Factor(Box<ParseTree>),
     Product {
-        multiplicant: Box<SyntaxTree>,
-        multiplier: Box<SyntaxTree>,
+        multiplicant: Box<ParseTree>,
+        multiplier: Box<ParseTree>,
     },
     Quotient {
-        dividend: Box<SyntaxTree>,
-        divisor: Box<SyntaxTree>,
+        dividend: Box<ParseTree>,
+        divisor: Box<ParseTree>,
     },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Factor {
-    Number(Box<SyntaxTree>),
+    Number(Box<ParseTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
-    NumberLiteral(Box<SyntaxTree>),
+    NumberLiteral(Box<ParseTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NumberLiteral {
-    Number(Box<SyntaxTree>),
+    Number(Box<ParseTree>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -37,6 +37,14 @@ fn main() {
             lexeme: Some("=".to_string()),
         },
         Token {
+            kind: TokenKind::Minus,
+            lexeme: Some("-".to_string()),
+        },
+        Token {
+            kind: TokenKind::LeftParenthesis,
+            lexeme: Some("(".to_string()),
+        },
+        Token {
             kind: TokenKind::Integer,
             lexeme: Some("1".to_string()),
         },
@@ -47,6 +55,10 @@ fn main() {
         Token {
             kind: TokenKind::Integer,
             lexeme: Some("1".to_string()),
+        },
+        Token {
+            kind: TokenKind::RightParenthesis,
+            lexeme: Some(")".to_string()),
         },
         Token {
             kind: TokenKind::Times,
@@ -63,6 +75,10 @@ fn main() {
         Token {
             kind: TokenKind::Integer,
             lexeme: Some("3".to_string()),
+        },
+        Token {
+            kind: TokenKind::Semicolon,
+            lexeme: Some(String::from(";")),
         },
         Token {
             kind: TokenKind::Keyword,
@@ -88,9 +104,61 @@ fn main() {
             kind: TokenKind::Integer,
             lexeme: Some("1".to_string()),
         },
+        Token {
+            kind: TokenKind::Semicolon,
+            lexeme: Some(";".to_string()),
+        },
     ];
 
-    let ast = parser::parse(&tokens);
+    let block_tokens = vec![
+        Token {
+            kind: TokenKind::Keyword,
+            lexeme: Some(String::from("let")),
+        },
+        Token {
+            kind: TokenKind::Identifier,
+            lexeme: Some(String::from("result")),
+        },
+        Token {
+            kind: TokenKind::Colon,
+            lexeme: Some(String::from(":")),
+        },
+        Token {
+            kind: TokenKind::DataType,
+            lexeme: Some(String::from("number")),
+        },
+        Token {
+            kind: TokenKind::Assignment,
+            lexeme: Some(String::from("=")),
+        },
+        Token {
+            kind: TokenKind::LeftCurly,
+            lexeme: Some(String::from("{")),
+        },
+        Token {
+            kind: TokenKind::Number,
+            lexeme: Some(String::from("3")),
+        },
+        Token {
+            kind: TokenKind::Times,
+            lexeme: Some(String::from("*")),
+        },
+        Token {
+            kind: TokenKind::Number,
+            lexeme: Some(String::from("3")),
+        },
+        Token {
+            kind: TokenKind::RightCurly,
+            lexeme: Some(String::from("}")),
+        },
+        Token {
+            kind: TokenKind::Semicolon,
+            lexeme: Some(String::from(";")),
+        },
+    ];
 
-    println!("{ast:#?}");
+    // let ast = parser::parse(&tokens);
+    let block_ast = parser::parse(&block_tokens);
+
+    println!("{block_ast:#?}");
 }
