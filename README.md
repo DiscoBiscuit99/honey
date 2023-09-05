@@ -20,17 +20,17 @@ mut b: number = a + 1;  # result: b <- a + 1
 b += a;                 # result: b <- b + a
 
 # basic (single-variate) function/procedure declarations
-let double_me: (x: number) -> number {
+let double_me: (x: number) -> number = {
     x * 2
 };
 
 # multi-variate/single-output function/procedure declarations
-let double_and_add_us: (x: number, y: number) -> number {
+let double_and_add_us: (x: number, y: number) -> number = {
     x * 2 + y * 2
 };
 
 # multi-variate/multi-output function/procedure declarations
-let double_us: (x: number, y: number) -> (number, number) {
+let double_us: (x: number, y: number) -> (number, number) = {
     (x * 2, y * 2)
 };
 
