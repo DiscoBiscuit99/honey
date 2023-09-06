@@ -62,7 +62,6 @@ impl Parser {
                 let return_type = self.parse_type()?;
                 Ok(Type::FuncType(param_types, Box::new(return_type)))
             }
-            // ... handle other types, like func-type
             _ => Err("Expected a type".to_string()),
         }
     }
@@ -81,7 +80,6 @@ impl Parser {
         match self.consume() {
             Some(Token::NumberLiteral(n)) => Ok(Expression::NumberLiteral(n)),
             Some(Token::Identifier(id)) => Ok(Expression::Identifier(id)),
-            // ... other kinds of factors (e.g., parenthesized expressions)
             _ => Err("Expected a factor".to_string()),
         }
     }
@@ -162,11 +160,6 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, String> {
-        if let Some(Token::OpenBrace) = self.peek() {
-            let block_expr = self.parse_block()?;
-            return Ok(Statement::ExpressionStatement(block_expr));
-        }
-
         match self.peek() {
             Some(Token::Let) | Some(Token::Mut) => {
                 let mutable = if self.consume() == Some(Token::Mut) {
@@ -190,7 +183,10 @@ impl Parser {
                     Err("Expected an identifier".to_string())
                 }
             }
-            // ... handle other statements
+            Some(Token::OpenBrace) => {
+                let block_expr = self.parse_block()?;
+                Ok(Statement::ExpressionStatement(block_expr))
+            }
             _ => Err("Expected a statement".to_string()),
         }
     }
