@@ -1,32 +1,60 @@
+use std::fs::File;
+use std::io::prelude::*;
+
+use colored::Colorize;
+use structopt::StructOpt;
+
 use honey::{lexer, parser};
 
-const DECLARATION_SRC: &str = r#"
-# let x: number = 1;  # immutable value
-# mut y: number = 0;  # mutable value
-# y = y + x;          # reassignment with addition
-# y = y - x;          # and with subtraction
-# y = y * x;          # and with multiplication
-# y = y / x;          # and with division
-"#;
+#[derive(StructOpt, Debug)]
+#[structopt(
+    name = "Honey",
+    about = "A blazingly fast failure of a programming language."
+)]
+struct Opt {
+    /// The input file to compile
+    #[structopt()]
+    file: String,
 
-const SIMPLE_FN_SRC: &str = r#"
-let boring: (x: number) -> number = x;
-
-let double_me: (x: number) -> number = {
-    x * 2
-};
-
-let double_us_and_add_us: (x: number, y: number) -> number = {
-    x * 2 + y * 2
-};
-"#;
+    /// Prints a representation of all the intermediary steps
+    #[structopt(short = "v", long = "verbose")]
+    verbose: bool,
+}
 
 fn main() {
-    let input = SIMPLE_FN_SRC;
-    let tokens = lexer::lex(input);
-    println!("Tokens: {:#?}", tokens);
-    match parser::parse(tokens) {
-        Ok(program) => println!("Parsed program: {:#?}", program),
-        Err(e) => println!("Failed to parse: {}", e),
+    let opt = Opt::from_args();
+
+    let mut file = match File::open(opt.file) {
+        Ok(file) => file,
+        Err(e) => {
+            println!("{} {}", "Failed to open given file.".red(), e);
+            std::process::exit(2);
+        }
+    };
+
+    let mut source = String::new();
+
+    if let Some(e) = file.read_to_string(&mut source).err() {
+        println!("{} {}", "Failed to read given file.".red(), e);
+        std::process::exit(2);
+    }
+
+    let tokens = lexer::lex(&source);
+    let program = parser::parse(&tokens);
+
+    if opt.verbose {
+        println!(
+            "\n{}\n\n{}\n------------\n",
+            "File contents:".bold().yellow(),
+            source,
+        );
+
+        println!(
+            "{} {:#?}\n\n------------\n",
+            "Tokens:".bold().green(),
+            tokens
+        );
+
+        println!("{} {:#?}\n", "Parsed program:".bold().blue(), program);
     }
 }

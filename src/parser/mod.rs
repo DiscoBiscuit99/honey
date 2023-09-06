@@ -1,13 +1,20 @@
-use crate::Expression;
-use crate::Param;
-use crate::Program;
-use crate::Statement;
-use crate::Token;
-use crate::Type;
+use colored::Colorize;
 
-pub fn parse(tokens: Vec<Token>) -> Result<Program, String> {
-    let mut parser = Parser::new(tokens);
-    parser.parse_program()
+use crate::syntax::parse_tree::Expression;
+use crate::syntax::parse_tree::Param;
+use crate::syntax::parse_tree::Program;
+use crate::syntax::parse_tree::Statement;
+use crate::syntax::parse_tree::Type;
+use crate::syntax::tokens::Token;
+
+pub fn parse(tokens: &[Token]) -> Program {
+    match Parser::new(tokens.to_vec()).parse_program() {
+        Ok(program) => program,
+        Err(e) => {
+            println!("Failed to parse the program, {e}");
+            std::process::exit(1);
+        }
+    }
 }
 
 pub struct Parser {
@@ -21,6 +28,17 @@ impl Parser {
             tokens,
             position: 0,
         }
+    }
+
+    fn expect_err_msg(&self, expected: &Token, actual: Option<&Token>) -> String {
+        let next = if let Some(token) = actual {
+            format!("{}", token)
+        } else {
+            format!("none")
+        };
+        format!("expected {}, found {}", expected, next)
+            .red()
+            .to_string()
     }
 
     fn peek(&self) -> Option<&Token> {
@@ -40,7 +58,7 @@ impl Parser {
             self.consume();
             Ok(())
         } else {
-            Err(format!("Expected {:?}, found {:?}", expected, self.peek()))
+            Err(self.expect_err_msg(&expected, self.peek()))
         }
     }
 
@@ -62,7 +80,7 @@ impl Parser {
                 let return_type = self.parse_type()?;
                 Ok(Type::FuncType(param_types, Box::new(return_type)))
             }
-            _ => Err("Expected a type".to_string()),
+            _ => Err("expected a type".to_string()),
         }
     }
 
@@ -72,7 +90,7 @@ impl Parser {
             let datatype = self.parse_type()?;
             Ok(Param::Parameter(name, datatype))
         } else {
-            Err("Expected an identifier".to_string())
+            Err("expected an identifier".to_string())
         }
     }
 
@@ -80,15 +98,12 @@ impl Parser {
         match self.consume() {
             Some(Token::NumberLiteral(n)) => Ok(Expression::NumberLiteral(n)),
             Some(Token::Identifier(id)) => Ok(Expression::Identifier(id)),
-            _ => Err("Expected a factor".to_string()),
+            _ => Err("expected a factor".to_string()),
         }
     }
 
     fn parse_term(&mut self) -> Result<Expression, String> {
         let mut left = self.parse_factor()?;
-
-        // Here you would handle multiplication, division, etc.
-        // For this example, we'll leave it as is.
 
         while let Some(token) = self.peek().cloned() {
             match token {
@@ -180,14 +195,14 @@ impl Parser {
                         value,
                     })
                 } else {
-                    Err("Expected an identifier".to_string())
+                    Err("expected an identifier".to_string())
                 }
             }
             Some(Token::OpenBrace) => {
                 let block_expr = self.parse_block()?;
                 Ok(Statement::ExpressionStatement(block_expr))
             }
-            _ => Err("Expected a statement".to_string()),
+            _ => Err("expected a statement".to_string()),
         }
     }
 

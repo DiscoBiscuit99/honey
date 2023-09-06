@@ -1,0 +1,5 @@
+# a simple declaration
+let a: number = 3;
+
+# the simplest possible function (probably)
+let f: (x: number) -> number = x;

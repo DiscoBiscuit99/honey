@@ -1,10 +1,18 @@
 use std::{iter::Peekable, str::Chars};
 
-use crate::Token;
+use crate::syntax::tokens::Token;
+
+mod error;
+use error::{err_msg, LexingError};
 
 pub fn lex(input: &str) -> Vec<Token> {
-    let mut lexer = Lexer::new(input);
-    lexer.lex()
+    match Lexer::new(input).lex() {
+        Ok(program) => program,
+        Err(e) => {
+            println!("{}", err_msg(e));
+            std::process::exit(1);
+        }
+    }
 }
 
 pub struct Lexer<'s> {
@@ -21,16 +29,16 @@ impl<'s> Lexer<'_> {
             source: input.chars().peekable(),
             tokens: vec![],
             position: 0,
-            line: 0,
-            column: 0,
+            line: 1,
+            column: 1,
         }
     }
 
-    fn lex(&mut self) -> Vec<Token> {
+    fn lex(&mut self) -> Result<Vec<Token>, LexingError> {
         while let Some(&c) = self.source.peek() {
             if c.is_whitespace() {
                 // ignore whitespace
-                self.source.next();
+                self.consume_char();
             } else if c == '#' {
                 // scan a comment
                 self.consume_comment();
@@ -43,66 +51,82 @@ impl<'s> Lexer<'_> {
             } else {
                 match c {
                     '=' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Equal);
                     }
                     ':' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Colon);
                     }
                     ';' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::SemiColon);
                     }
                     ',' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Comma);
                     }
                     '+' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Plus);
                     }
                     '-' => {
-                        self.source.next();
+                        self.consume_char();
                         if self.source.peek() == Some(&'>') {
-                            self.source.next();
+                            self.consume_char();
                             self.tokens.push(Token::Arrow);
                         } else {
                             self.tokens.push(Token::Minus);
                         }
                     }
                     '*' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Asterisk);
                     }
                     '/' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::Slash);
                     }
                     '{' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::OpenBrace);
                     }
                     '}' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::CloseBrace);
                     }
                     '(' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::OpenParen);
                     }
                     ')' => {
-                        self.source.next();
+                        self.consume_char();
                         self.tokens.push(Token::CloseParen);
                     }
                     _ => {
-                        println!("Unknown token: {}", c);
-                        self.source.next();
+                        return Err(LexingError::UnknownCharacter {
+                            line: self.line,
+                            column: self.column,
+                        });
                     }
                 }
             }
         }
-        self.tokens.clone()
+        Ok(self.tokens.clone())
+    }
+
+    fn consume_char(&mut self) -> Option<char> {
+        if let Some(&c) = self.source.peek() {
+            if c == '\n' {
+                self.line += 1;
+                self.column = 1;
+            } else {
+                self.column += 1;
+            }
+        }
+
+        self.position += 1;
+        self.source.next()
     }
 
     fn consume_comment(&mut self) {
@@ -110,7 +134,7 @@ impl<'s> Lexer<'_> {
             if c == '\n' {
                 break;
             }
-            self.source.next();
+            self.consume_char();
         }
     }
 
@@ -118,11 +142,12 @@ impl<'s> Lexer<'_> {
         let mut ident = String::new();
         while let Some(&c) = self.source.peek() {
             if c.is_alphabetic() || c == '_' {
-                ident.push(self.source.next().unwrap());
+                ident.push(self.consume_char().unwrap());
             } else {
                 break;
             }
         }
+        // check if it's a keyword
         match ident.as_str() {
             "let" => self.tokens.push(Token::Let),
             "mut" => self.tokens.push(Token::Mut),
@@ -137,7 +162,7 @@ impl<'s> Lexer<'_> {
         let mut number = String::new();
         while let Some(&c) = self.source.peek() {
             if c.is_numeric() {
-                number.push(self.source.next().unwrap());
+                number.push(self.consume_char().unwrap());
             } else {
                 break;
             }
