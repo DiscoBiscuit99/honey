@@ -21,7 +21,7 @@ impl std::fmt::Display for LexingError {
 }
 
 pub fn err_msg(error: LexingError) -> String {
-    let prefix = "Failed in the lexing process,";
+    let prefix = "Failed in the lexing process:";
 
     let err_msg = match error {
         LexingError::UnknownCharacter { .. } => {

@@ -11,7 +11,7 @@ pub fn parse(tokens: &[Token]) -> Program {
     match Parser::new(tokens.to_vec()).parse_program() {
         Ok(program) => program,
         Err(e) => {
-            println!("Failed to parse the program, {e}");
+            println!("Failed to parse the program: {e}");
             std::process::exit(1);
         }
     }
@@ -36,7 +36,9 @@ impl Parser {
         } else {
             format!("none")
         };
-        format!("expected {}, found {}", expected, next)
+        let expected_part = format!("expected {}", expected.to_string().bold());
+        let found_part = format!("found {}", next.to_string().bold());
+        format!("{}, {}", expected_part, found_part)
             .red()
             .to_string()
     }
