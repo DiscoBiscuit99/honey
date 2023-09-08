@@ -127,29 +127,31 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, String> {
-        if let Some(Token::OpenBrace) = self.peek() {
-            return self.parse_block();
-        }
+        let expr = if let Some(Token::OpenBrace) = self.peek() {
+            self.parse_block()?
+        } else {
+            let mut left = self.parse_term()?;
 
-        let mut left = self.parse_term()?;
-
-        while let Some(token) = self.peek().cloned() {
-            match token {
-                Token::Plus => {
-                    self.consume(); // Consume the '+' token
-                    let right = self.parse_term()?;
-                    left = Expression::Addition(Box::new(left), Box::new(right));
+            while let Some(token) = self.peek().cloned() {
+                match token {
+                    Token::Plus => {
+                        self.consume(); // Consume the '+' token
+                        let right = self.parse_term()?;
+                        left = Expression::Addition(Box::new(left), Box::new(right));
+                    }
+                    Token::Minus => {
+                        self.consume(); // Consume the '-' token
+                        let right = self.parse_term()?;
+                        left = Expression::Subtraction(Box::new(left), Box::new(right));
+                    }
+                    _ => break,
                 }
-                Token::Minus => {
-                    self.consume(); // Consume the '-' token
-                    let right = self.parse_term()?;
-                    left = Expression::Subtraction(Box::new(left), Box::new(right));
-                }
-                _ => break,
             }
-        }
 
-        Ok(left)
+            left
+        };
+
+        Ok(expr)
     }
 
     fn parse_block(&mut self) -> Result<Expression, String> {

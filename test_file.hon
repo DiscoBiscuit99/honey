@@ -3,3 +3,14 @@ let a: number = 3;
 
 # the simplest possible function (probably)
 let f: (x: number) -> number = x;
+
+# another function declaration
+let f: (x: number) -> number = {
+  let b: number = x * 2;
+  let c: number = b * 3;
+  c
+};
+
+# function call
+let h: number = f(3 + 4);
+

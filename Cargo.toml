@@ -1,6 +1,5 @@
 [package]
 name = "honey"
-about = "A blazingly fast failure of a program."
 version = "0.1.0"
 edition = "2021"
 
