@@ -1,4 +1,4 @@
-# 🍯 Honey
+# Honey, I'm home 🍯
 
 A *very sophisticated*, compiled programming language made for household use alone. 🐝
 
