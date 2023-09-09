@@ -2,23 +2,45 @@
 pub enum Type {
     Number,
     Unit,
-    FuncType(Vec<Param>, Box<Type>),
+    FuncType {
+        parameters: Vec<Param>,
+        return_type: Box<Type>,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub enum Param {
-    Parameter(String, Type),
+    Parameter { name: String, datatype: Type },
 }
 
 #[derive(Debug, Clone)]
 pub enum Expression {
     NumberLiteral(String),
     Identifier(String),
-    Addition(Box<Expression>, Box<Expression>),
-    Subtraction(Box<Expression>, Box<Expression>),
-    Multiplication(Box<Expression>, Box<Expression>),
-    Division(Box<Expression>, Box<Expression>),
-    Block(Vec<Statement>, Box<Expression>),
+    Addition {
+        augend: Box<Expression>,
+        addend: Box<Expression>,
+    },
+    Subtraction {
+        minuend: Box<Expression>,
+        subtrahend: Box<Expression>,
+    },
+    Multiplication {
+        multiplicant: Box<Expression>,
+        multiplier: Box<Expression>,
+    },
+    Division {
+        dividend: Box<Expression>,
+        divisor: Box<Expression>,
+    },
+    Block {
+        statements: Vec<Statement>,
+        return_value: Box<Expression>,
+    },
+    FunctionCall {
+        name: String,
+        arguments: Vec<Expression>,
+    },
     Unit,
 }
 
@@ -38,3 +60,4 @@ pub enum Statement {
 }
 
 pub type Program = Vec<Statement>;
+pub type Arguments = Vec<Expression>;

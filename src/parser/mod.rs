@@ -1,5 +1,6 @@
 use colored::Colorize;
 
+use crate::syntax::parse_tree::Arguments;
 use crate::syntax::parse_tree::Expression;
 use crate::syntax::parse_tree::Param;
 use crate::syntax::parse_tree::Program;
@@ -80,7 +81,10 @@ impl Parser {
                 self.expect(Token::CloseParen)?;
                 self.expect(Token::Arrow)?;
                 let return_type = self.parse_type()?;
-                Ok(Type::FuncType(param_types, Box::new(return_type)))
+                Ok(Type::FuncType {
+                    parameters: param_types,
+                    return_type: Box::new(return_type),
+                })
             }
             _ => Err("expected a type".to_string()),
         }
@@ -90,10 +94,29 @@ impl Parser {
         if let Some(Token::Identifier(name)) = self.consume() {
             self.expect(Token::Colon)?;
             let datatype = self.parse_type()?;
-            Ok(Param::Parameter(name, datatype))
+            Ok(Param::Parameter { name, datatype })
         } else {
             Err("expected an identifier".to_string())
         }
+    }
+
+    fn parse_arguments(&mut self) -> Result<Arguments, String> {
+        self.expect(Token::OpenParen)?;
+
+        let mut arguments = vec![];
+
+        let argument = self.parse_expression()?;
+        arguments.push(argument);
+
+        while let Some(Token::Comma) = self.peek() {
+            self.expect(Token::Comma)?;
+            let argument = self.parse_expression()?;
+            arguments.push(argument);
+        }
+
+        self.expect(Token::CloseParen)?;
+
+        Ok(arguments)
     }
 
     fn parse_factor(&mut self) -> Result<Expression, String> {
@@ -105,7 +128,17 @@ impl Parser {
         } else {
             match next {
                 Some(Token::NumberLiteral(n)) => Ok(Expression::NumberLiteral(n)),
-                Some(Token::Identifier(id)) => Ok(Expression::Identifier(id)),
+                Some(Token::Identifier(id)) => {
+                    if let Some(Token::OpenParen) = self.peek() {
+                        let arguments = self.parse_arguments()?;
+                        Ok(Expression::FunctionCall {
+                            name: id,
+                            arguments,
+                        })
+                    } else {
+                        Ok(Expression::Identifier(id))
+                    }
+                }
                 _ => Err("expected a factor".to_string()),
             }
         }
@@ -119,12 +152,18 @@ impl Parser {
                 Token::Asterisk => {
                     self.consume();
                     let right = self.parse_factor()?;
-                    left = Expression::Multiplication(Box::new(left), Box::new(right));
+                    left = Expression::Multiplication {
+                        multiplicant: Box::new(left),
+                        multiplier: Box::new(right),
+                    };
                 }
                 Token::Slash => {
                     self.consume();
                     let right = self.parse_factor()?;
-                    left = Expression::Division(Box::new(left), Box::new(right));
+                    left = Expression::Division {
+                        dividend: Box::new(left),
+                        divisor: Box::new(right),
+                    };
                 }
                 _ => break,
             }
@@ -144,12 +183,18 @@ impl Parser {
                     Token::Plus => {
                         self.consume(); // Consume the '+' token
                         let right = self.parse_term()?;
-                        left = Expression::Addition(Box::new(left), Box::new(right));
+                        left = Expression::Addition {
+                            augend: Box::new(left),
+                            addend: Box::new(right),
+                        };
                     }
                     Token::Minus => {
                         self.consume(); // Consume the '-' token
                         let right = self.parse_term()?;
-                        left = Expression::Subtraction(Box::new(left), Box::new(right));
+                        left = Expression::Subtraction {
+                            minuend: Box::new(left),
+                            subtrahend: Box::new(right),
+                        };
                     }
                     _ => break,
                 }
@@ -182,7 +227,10 @@ impl Parser {
 
         self.expect(Token::CloseBrace)?; // Expect '}'
 
-        Ok(Expression::Block(statements, Box::new(return_value)))
+        Ok(Expression::Block {
+            statements,
+            return_value: Box::new(return_value),
+        })
     }
 
     fn parse_statement(&mut self) -> Result<Statement, String> {

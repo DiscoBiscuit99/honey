@@ -12,13 +12,17 @@ use honey::{lexer, parser};
     about = "A blazingly fast failure of a programming language."
 )]
 struct Opt {
-    /// The input file to compile
+    /// The input file to compile.
     #[structopt()]
     file: String,
 
-    /// Prints a representation of all the intermediary steps
+    /// Prints a representation of all the intermediary steps.
     #[structopt(short = "v", long = "verbose")]
     verbose: bool,
+
+    /// Outputs the generated structures to a file.
+    #[structopt(short = "s", long = "save")]
+    save_structures: bool,
 }
 
 fn main() {
@@ -56,5 +60,12 @@ fn main() {
         );
 
         println!("{} {:#?}\n", "Parsed program:".bold().blue(), program);
+    }
+
+    if opt.save_structures {
+        std::fs::write("debug/generated/tokens", format!("{:#?}", &tokens))
+            .expect("failed to write tokens to file");
+        std::fs::write("debug/generated/parse_tree", format!("{:#?}", &program))
+            .expect("failed to write parse tree to file");
     }
 }
