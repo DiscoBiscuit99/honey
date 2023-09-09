@@ -14,6 +14,19 @@ pub enum Param {
 }
 
 #[derive(Debug, Clone)]
+pub struct Block {
+    pub statements: Vec<Statement>,
+    pub return_value: Box<Expression>,
+}
+
+#[derive(Debug, Clone)]
+pub struct If {
+    pub condition: Box<Expression>,
+    pub then_block: Block,
+    pub else_block: Option<Block>,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression {
     NumberLiteral(String),
     Identifier(String),
@@ -33,14 +46,36 @@ pub enum Expression {
         dividend: Box<Expression>,
         divisor: Box<Expression>,
     },
-    Block {
-        statements: Vec<Statement>,
-        return_value: Box<Expression>,
+    LessThan {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    GreaterThan {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    LessThanOrEqual {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    GreaterThanOrEqual {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    Equal {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    NotEqual {
+        left: Box<Expression>,
+        right: Box<Expression>,
     },
     FunctionCall {
         name: String,
         arguments: Vec<Expression>,
     },
+    Block(Block),
+    If(If),
     Unit,
 }
 
@@ -57,6 +92,7 @@ pub enum Statement {
         value: Expression,
     },
     ExpressionStatement(Expression),
+    IfStatement(If),
 }
 
 pub type Program = Vec<Statement>;

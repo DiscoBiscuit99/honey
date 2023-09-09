@@ -52,7 +52,40 @@ impl<'s> Lexer<'_> {
                 match c {
                     '=' => {
                         self.consume_char();
-                        self.tokens.push(Token::Equal);
+                        //if self.source.peek() == Some(&)
+                        if let Some('=') = self.source.peek() {
+                            self.consume_char();
+                            self.tokens.push(Token::Equal);
+                        } else {
+                            self.tokens.push(Token::Assignment);
+                        }
+                    }
+                    '!' => {
+                        self.consume_char();
+                        if let Some('=') = self.source.peek() {
+                            self.consume_char();
+                            self.tokens.push(Token::NotEqual);
+                        } else {
+                            self.tokens.push(Token::Negate);
+                        }
+                    }
+                    '<' => {
+                        self.consume_char();
+                        if self.source.peek() == Some(&'=') {
+                            self.consume_char();
+                            self.tokens.push(Token::LessEqual);
+                        } else {
+                            self.tokens.push(Token::OpenAngle);
+                        }
+                    }
+                    '>' => {
+                        self.consume_char();
+                        if self.source.peek() == Some(&'=') {
+                            self.consume_char();
+                            self.tokens.push(Token::GreaterEqual);
+                        } else {
+                            self.tokens.push(Token::CloseAngle);
+                        }
                     }
                     ':' => {
                         self.consume_char();
@@ -151,6 +184,8 @@ impl<'s> Lexer<'_> {
         match ident.as_str() {
             "let" => self.tokens.push(Token::Let),
             "mut" => self.tokens.push(Token::Mut),
+            "if" => self.tokens.push(Token::If),
+            "else" => self.tokens.push(Token::Else),
             "number" => self.tokens.push(Token::NumberKeyword),
             "unit" => self.tokens.push(Token::UnitKeyword),
             _ => self.tokens.push(Token::Identifier(ident)),

@@ -5,7 +5,7 @@
     ),
     Colon,
     NumberKeyword,
-    Equal,
+    Assignment,
     NumberLiteral(
         "3",
     ),
@@ -16,7 +16,7 @@
     ),
     Colon,
     NumberKeyword,
-    Equal,
+    Assignment,
     NumberLiteral(
         "3",
     ),
@@ -53,7 +53,7 @@
     CloseParen,
     Arrow,
     NumberKeyword,
-    Equal,
+    Assignment,
     Identifier(
         "x",
     ),
@@ -72,7 +72,7 @@
     CloseParen,
     Arrow,
     NumberKeyword,
-    Equal,
+    Assignment,
     OpenBrace,
     Let,
     Identifier(
@@ -80,7 +80,7 @@
     ),
     Colon,
     NumberKeyword,
-    Equal,
+    Assignment,
     Identifier(
         "x",
     ),
@@ -95,7 +95,7 @@
     ),
     Colon,
     NumberKeyword,
-    Equal,
+    Assignment,
     Identifier(
         "b",
     ),
@@ -115,7 +115,7 @@
     ),
     Colon,
     NumberKeyword,
-    Equal,
+    Assignment,
     Identifier(
         "f",
     ),
@@ -128,5 +128,64 @@
         "4",
     ),
     CloseParen,
+    SemiColon,
+    Let,
+    Identifier(
+        "fib",
+    ),
+    Colon,
+    OpenParen,
+    Identifier(
+        "n",
+    ),
+    Colon,
+    NumberKeyword,
+    CloseParen,
+    Arrow,
+    NumberKeyword,
+    Assignment,
+    OpenBrace,
+    If,
+    Identifier(
+        "n",
+    ),
+    OpenAngle,
+    NumberLiteral(
+        "2",
+    ),
+    OpenBrace,
+    NumberLiteral(
+        "1",
+    ),
+    CloseBrace,
+    Else,
+    OpenBrace,
+    Identifier(
+        "fib",
+    ),
+    OpenParen,
+    Identifier(
+        "n",
+    ),
+    Minus,
+    NumberLiteral(
+        "1",
+    ),
+    CloseParen,
+    Plus,
+    Identifier(
+        "fib",
+    ),
+    OpenParen,
+    Identifier(
+        "n",
+    ),
+    Minus,
+    NumberLiteral(
+        "2",
+    ),
+    CloseParen,
+    CloseBrace,
+    CloseBrace,
     SemiColon,
 ]

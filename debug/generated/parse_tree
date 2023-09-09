@@ -63,39 +63,41 @@
             ],
             return_type: Number,
         },
-        value: Block {
-            statements: [
-                Declaration {
-                    mutable: false,
-                    name: "b",
-                    datatype: Number,
-                    value: Multiplication {
-                        multiplicant: Identifier(
-                            "x",
-                        ),
-                        multiplier: NumberLiteral(
-                            "2",
-                        ),
+        value: Block(
+            Block {
+                statements: [
+                    Declaration {
+                        mutable: false,
+                        name: "b",
+                        datatype: Number,
+                        value: Multiplication {
+                            multiplicant: Identifier(
+                                "x",
+                            ),
+                            multiplier: NumberLiteral(
+                                "2",
+                            ),
+                        },
                     },
-                },
-                Declaration {
-                    mutable: false,
-                    name: "c",
-                    datatype: Number,
-                    value: Multiplication {
-                        multiplicant: Identifier(
-                            "b",
-                        ),
-                        multiplier: NumberLiteral(
-                            "3",
-                        ),
+                    Declaration {
+                        mutable: false,
+                        name: "c",
+                        datatype: Number,
+                        value: Multiplication {
+                            multiplicant: Identifier(
+                                "b",
+                            ),
+                            multiplier: NumberLiteral(
+                                "3",
+                            ),
+                        },
                     },
-                },
-            ],
-            return_value: Identifier(
-                "c",
-            ),
-        },
+                ],
+                return_value: Identifier(
+                    "c",
+                ),
+            },
+        ),
     },
     Declaration {
         mutable: false,
@@ -114,5 +116,74 @@
                 },
             ],
         },
+    },
+    Declaration {
+        mutable: false,
+        name: "fib",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [],
+                return_value: If(
+                    If {
+                        condition: LessThan {
+                            left: Identifier(
+                                "n",
+                            ),
+                            right: NumberLiteral(
+                                "2",
+                            ),
+                        },
+                        then_block: Block {
+                            statements: [],
+                            return_value: NumberLiteral(
+                                "1",
+                            ),
+                        },
+                        else_block: Some(
+                            Block {
+                                statements: [],
+                                return_value: Addition {
+                                    augend: FunctionCall {
+                                        name: "fib",
+                                        arguments: [
+                                            Subtraction {
+                                                minuend: Identifier(
+                                                    "n",
+                                                ),
+                                                subtrahend: NumberLiteral(
+                                                    "1",
+                                                ),
+                                            },
+                                        ],
+                                    },
+                                    addend: FunctionCall {
+                                        name: "fib",
+                                        arguments: [
+                                            Subtraction {
+                                                minuend: Identifier(
+                                                    "n",
+                                                ),
+                                                subtrahend: NumberLiteral(
+                                                    "2",
+                                                ),
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        ),
+                    },
+                ),
+            },
+        ),
     },
 ]

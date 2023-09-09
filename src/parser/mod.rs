@@ -1,7 +1,9 @@
 use colored::Colorize;
 
 use crate::syntax::parse_tree::Arguments;
+use crate::syntax::parse_tree::Block;
 use crate::syntax::parse_tree::Expression;
+use crate::syntax::parse_tree::If;
 use crate::syntax::parse_tree::Param;
 use crate::syntax::parse_tree::Program;
 use crate::syntax::parse_tree::Statement;
@@ -172,9 +174,69 @@ impl Parser {
         Ok(left)
     }
 
+    fn parse_comparison(&mut self, mut left: Expression) -> Result<Expression, String> {
+        while let Some(token) = self.peek().cloned() {
+            match token {
+                Token::OpenAngle => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::LessThan {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                Token::CloseAngle => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::GreaterThan {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                Token::LessEqual => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::LessThanOrEqual {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                Token::GreaterEqual => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::GreaterThanOrEqual {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                Token::Equal => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::Equal {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                Token::NotEqual => {
+                    self.consume();
+                    let right = self.parse_term()?;
+                    left = Expression::NotEqual {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    };
+                }
+                _ => break,
+            }
+        }
+
+        Ok(left)
+    }
+
     fn parse_expression(&mut self) -> Result<Expression, String> {
         let expr = if let Some(Token::OpenBrace) = self.peek() {
-            self.parse_block()?
+            Expression::Block(self.parse_block()?)
+        } else if let Some(Token::If) = self.peek() {
+            Expression::If(self.parse_if()?)
         } else {
             let mut left = self.parse_term()?;
 
@@ -200,13 +262,25 @@ impl Parser {
                 }
             }
 
+            if let Some(
+                Token::NotEqual
+                | Token::Equal
+                | Token::GreaterEqual
+                | Token::LessEqual
+                | Token::OpenAngle
+                | Token::CloseAngle,
+            ) = self.peek()
+            {
+                left = self.parse_comparison(left)?;
+            }
+
             left
         };
 
         Ok(expr)
     }
 
-    fn parse_block(&mut self) -> Result<Expression, String> {
+    fn parse_block(&mut self) -> Result<Block, String> {
         self.expect(Token::OpenBrace)?; // Expect '{'
 
         let mut return_value = Expression::Unit;
@@ -227,9 +301,29 @@ impl Parser {
 
         self.expect(Token::CloseBrace)?; // Expect '}'
 
-        Ok(Expression::Block {
+        Ok(Block {
             statements,
             return_value: Box::new(return_value),
+        })
+    }
+
+    fn parse_if(&mut self) -> Result<If, String> {
+        self.expect(Token::If)?;
+
+        let condition = self.parse_expression()?;
+        let then_block = self.parse_block()?;
+
+        let else_block = if let Some(Token::Else) = self.peek() {
+            self.consume();
+            self.parse_block().ok()
+        } else {
+            None
+        };
+
+        Ok(If {
+            condition: Box::new(condition),
+            then_block,
+            else_block,
         })
     }
 
@@ -244,7 +338,7 @@ impl Parser {
                 if let Some(Token::Identifier(name)) = self.consume() {
                     self.expect(Token::Colon)?;
                     let datatype = self.parse_type()?;
-                    self.expect(Token::Equal)?;
+                    self.expect(Token::Assignment)?;
                     let value = self.parse_expression()?;
                     self.expect(Token::SemiColon)?;
                     Ok(Statement::Declaration {
@@ -258,8 +352,8 @@ impl Parser {
                 }
             }
             Some(Token::OpenBrace) => {
-                let block_expr = self.parse_block()?;
-                Ok(Statement::ExpressionStatement(block_expr))
+                let block = self.parse_block()?;
+                Ok(Statement::ExpressionStatement(Expression::Block(block)))
             }
             _ => Err("expected a statement".to_string()),
         }
