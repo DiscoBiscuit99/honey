@@ -97,10 +97,17 @@ impl Parser {
     }
 
     fn parse_factor(&mut self) -> Result<Expression, String> {
-        match self.consume() {
-            Some(Token::NumberLiteral(n)) => Ok(Expression::NumberLiteral(n)),
-            Some(Token::Identifier(id)) => Ok(Expression::Identifier(id)),
-            _ => Err("expected a factor".to_string()),
+        let next = self.consume();
+        if let Some(Token::OpenParen) = next {
+            let expr = self.parse_expression()?;
+            self.expect(Token::CloseParen)?;
+            Ok(expr)
+        } else {
+            match next {
+                Some(Token::NumberLiteral(n)) => Ok(Expression::NumberLiteral(n)),
+                Some(Token::Identifier(id)) => Ok(Expression::Identifier(id)),
+                _ => Err("expected a factor".to_string()),
+            }
         }
     }
 

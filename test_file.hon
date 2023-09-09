@@ -1,6 +1,9 @@
 # a simple declaration
 let a: number = 3;
 
+# complicated arithmetic expression
+let a: number = 3 + 1 / 2 * (2 - 3);
+
 # the simplest possible function (probably)
 let f: (x: number) -> number = x;
 
