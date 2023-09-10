@@ -336,9 +336,8 @@ impl Parser {
 
         let mut else_if_blocks = vec![];
         while let Some((Token::Else, Token::If)) = self.peek_two() {
-            // consume both 'else' and 'if'
-            self.consume();
-            self.consume();
+            self.consume(); // consume 'else'
+            self.consume(); // consume 'if'
 
             else_if_blocks.push(ConditionalBlock {
                 condition: Box::new(self.parse_expression()?),
