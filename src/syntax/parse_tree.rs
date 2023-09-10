@@ -21,9 +21,15 @@ pub struct Block {
 
 #[derive(Debug, Clone)]
 pub struct If {
-    pub condition: Box<Expression>,
-    pub then_block: Block,
+    pub if_block: ConditionalBlock,
+    pub else_if_blocks: Vec<ConditionalBlock>,
     pub else_block: Option<Block>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConditionalBlock {
+    pub condition: Box<Expression>,
+    pub block: Block,
 }
 
 #[derive(Debug, Clone)]

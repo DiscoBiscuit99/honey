@@ -2,6 +2,7 @@ use colored::Colorize;
 
 use crate::syntax::parse_tree::Arguments;
 use crate::syntax::parse_tree::Block;
+use crate::syntax::parse_tree::ConditionalBlock;
 use crate::syntax::parse_tree::Expression;
 use crate::syntax::parse_tree::If;
 use crate::syntax::parse_tree::Param;
@@ -48,6 +49,17 @@ impl Parser {
 
     fn peek(&self) -> Option<&Token> {
         self.tokens.get(self.position)
+    }
+
+    fn peek_two(&self) -> Option<(&Token, &Token)> {
+        let first = self.tokens.get(self.position);
+        let second = self.tokens.get(self.position + 1);
+
+        if first.is_some() && second.is_some() {
+            Some((first.unwrap(), second.unwrap()))
+        } else {
+            None
+        }
     }
 
     fn consume(&mut self) -> Option<Token> {
@@ -310,8 +322,22 @@ impl Parser {
     fn parse_if(&mut self) -> Result<If, String> {
         self.expect(Token::If)?;
 
-        let condition = self.parse_expression()?;
-        let then_block = self.parse_block()?;
+        let if_block = ConditionalBlock {
+            condition: Box::new(self.parse_expression()?),
+            block: self.parse_block()?,
+        };
+
+        let mut else_if_blocks = vec![];
+        while let Some((Token::Else, Token::If)) = self.peek_two() {
+            // consume both 'else' and 'if'
+            self.consume();
+            self.consume();
+
+            else_if_blocks.push(ConditionalBlock {
+                condition: Box::new(self.parse_expression()?),
+                block: self.parse_block()?,
+            });
+        }
 
         let else_block = if let Some(Token::Else) = self.peek() {
             self.consume();
@@ -321,8 +347,8 @@ impl Parser {
         };
 
         Ok(If {
-            condition: Box::new(condition),
-            then_block,
+            if_block,
+            else_if_blocks: vec![],
             else_block,
         })
     }
