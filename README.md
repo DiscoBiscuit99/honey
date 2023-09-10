@@ -104,7 +104,7 @@ let pet: struct = .{
 };
 ```
 
-**Syntax**:
+**Syntax**: (somewhat outdated)
 
 ```bnf
 <program> ::= <statement-list>
