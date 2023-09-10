@@ -79,6 +79,10 @@ impl Parser {
         }
     }
 
+    fn rewind(&mut self, position: usize) {
+        self.position = position;
+    }
+
     fn parse_type(&mut self) -> Result<Type, String> {
         match self.consume() {
             Some(Token::NumberKeyword) => Ok(Type::Number),
@@ -245,9 +249,10 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Result<Expression, String> {
-        let expr = if let Some(Token::OpenBrace) = self.peek() {
+        let peeked = self.peek();
+        let expr = if let Some(Token::OpenBrace) = peeked {
             Expression::Block(self.parse_block()?)
-        } else if let Some(Token::If) = self.peek() {
+        } else if let Some(Token::If) = peeked {
             Expression::If(self.parse_if()?)
         } else {
             let mut left = self.parse_term()?;
@@ -301,11 +306,13 @@ impl Parser {
             match token {
                 Token::CloseBrace => break,
                 _ => {
-                    let parse_result = self.parse_statement();
-                    if let Some(stmt) = parse_result.ok() {
+                    let save_point = self.position;
+                    if let Some(stmt) = self.parse_statement().ok() {
                         statements.push(stmt);
                     } else {
+                        self.rewind(save_point);
                         return_value = self.parse_expression()?;
+                        break;
                     };
                 }
             }
@@ -376,6 +383,11 @@ impl Parser {
             Some(Token::OpenBrace) => {
                 let block = self.parse_block()?;
                 Ok(Statement::ExpressionStatement(Expression::Block(block)))
+            }
+            Some(Token::Identifier(_) | Token::NumberLiteral(_)) => {
+                let expression = self.parse_expression()?;
+                self.expect(Token::SemiColon)?;
+                Ok(Statement::ExpressionStatement(expression))
             }
             _ => Err("expected a statement".to_string()),
         }

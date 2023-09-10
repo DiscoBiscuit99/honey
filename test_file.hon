@@ -25,3 +25,19 @@ let fib: (n: number) -> number = {
     fib(n - 1) + fib(n - 2)
   }
 };
+
+let if_else_test: (n: number) -> number = {
+  if n < 2 {
+    print(fiz);
+    1
+  } else if n < 5 {
+    print(fuz);
+    2
+  } else if n < 7 {
+    print(baz);
+    3
+  } else {
+    print(buz);
+    4
+  }
+};

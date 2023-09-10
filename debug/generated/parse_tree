@@ -189,4 +189,73 @@
             },
         ),
     },
+    Declaration {
+        mutable: false,
+        name: "if_else_test",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [],
+                return_value: If(
+                    If {
+                        if_block: ConditionalBlock {
+                            condition: LessThan {
+                                left: Identifier(
+                                    "n",
+                                ),
+                                right: NumberLiteral(
+                                    "2",
+                                ),
+                            },
+                            block: Block {
+                                statements: [
+                                    ExpressionStatement(
+                                        FunctionCall {
+                                            name: "print",
+                                            arguments: [
+                                                Identifier(
+                                                    "fiz",
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ],
+                                return_value: NumberLiteral(
+                                    "1",
+                                ),
+                            },
+                        },
+                        else_if_blocks: [],
+                        else_block: Some(
+                            Block {
+                                statements: [
+                                    ExpressionStatement(
+                                        FunctionCall {
+                                            name: "print",
+                                            arguments: [
+                                                Identifier(
+                                                    "buz",
+                                                ),
+                                            ],
+                                        },
+                                    ),
+                                ],
+                                return_value: NumberLiteral(
+                                    "4",
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            },
+        ),
+    },
 ]
