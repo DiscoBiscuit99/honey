@@ -58,48 +58,48 @@ capture t: (x: number) -> number = x * 2;
 
 # simple struct/record
 let pet: struct = .{
-	name: string,
-	kind: animal_kind,
-	 
-	#! docstring like this?
-	let new: (name: string, kind: animal_kind) -> pet {
-		.{ name: name, kind: kind }
-		# maybe .{ name, kind } if variable names are identical to field names
-	};
-	 
-	#! for self-referencial instances (maybe?)
-	let kind: (self) -> animal_kind {
-		 self.kind
-	}
+    name: string,
+    kind: animal_kind,
+
+    #! docstring like this?
+    let new: (name: string, kind: animal_kind) -> pet {
+        .{ name: name, kind: kind }
+        # maybe .{ name, kind } if variable names are identical to field names
+    };
+
+    #! for self-referencial instances (maybe?)
+    let kind: (self) -> animal_kind {
+        self.kind
+    }
 };
 
 # simple struct/record (alt)
 let pet: struct = .{
-	pub name: string?,       # optional value (denoted by '?')
-	pub kind: animal_kind,
-	 
-	#! docstring like this?
-	let new: (name: string, kind: animal_kind) -> pet {
-		.{ name: name, kind: kind }
-		# maybe .{ name, kind } if variable names are identical to field names
-	};
-	 
-	#! for self-referencial instances (maybe?)
-	let kind: (self) -> animal_kind {
-		 self.kind
-	}
+    pub name: string?,       # optional value (denoted by '?')
+    pub kind: animal_kind,
+     
+    #! docstring like this?
+    let new: (name: string, kind: animal_kind) -> pet {
+        .{ name: name, kind: kind }
+        # maybe .{ name, kind } if variable names are identical to field names
+    };
+     
+    #! for self-referencial instances (maybe?)
+    let kind: (self) -> animal_kind {
+        self.kind
+    }
       
     let name: (self) -> string? {
-		self.name
+        self.name
     }
-	
+    
     let format: (self) -> string {
-		let alt_name: string = {
-		  let emotion: string = "😞"
-		  "No name " .. emotion
-		};
+        let alt_name: string = {
+            let emotion: string = "😞"
+            "No name " .. emotion
+        };
          
-		self.name ! alt_name .. ", " .. self.kind
+        self.name ! alt_name .. ", " .. self.kind
     }
 };
 ```
