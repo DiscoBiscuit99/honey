@@ -356,11 +356,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Result<Statement, String> {
         match self.peek() {
             Some(Token::Let) | Some(Token::Mut) => {
-                let mutable = if self.consume() == Some(Token::Mut) {
-                    true
-                } else {
-                    false
-                };
+                let mutable = self.consume() == Some(Token::Mut);
                 if let Some(Token::Identifier(name)) = self.consume() {
                     self.expect(Token::Colon)?;
                     let datatype = self.parse_type()?;
