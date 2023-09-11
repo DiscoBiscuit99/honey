@@ -208,9 +208,14 @@
                     If {
                         if_block: ConditionalBlock {
                             condition: LessThan {
-                                left: Identifier(
-                                    "n",
-                                ),
+                                left: Addition {
+                                    augend: NumberLiteral(
+                                        "1",
+                                    ),
+                                    addend: Identifier(
+                                        "n",
+                                    ),
+                                },
                                 right: NumberLiteral(
                                     "2",
                                 ),
@@ -255,6 +260,130 @@
                         ),
                     },
                 ),
+            },
+        ),
+    },
+    Declaration {
+        mutable: false,
+        name: "f",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [
+                    ExpressionStatement(
+                        Block(
+                            Block {
+                                statements: [
+                                    ExpressionStatement(
+                                        NumberLiteral(
+                                            "1",
+                                        ),
+                                    ),
+                                ],
+                                return_value: Unit,
+                            },
+                        ),
+                    ),
+                ],
+                return_value: Unit,
+            },
+        ),
+    },
+    Declaration {
+        mutable: false,
+        name: "f",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [
+                    ExpressionStatement(
+                        Block(
+                            Block {
+                                statements: [],
+                                return_value: NumberLiteral(
+                                    "1",
+                                ),
+                            },
+                        ),
+                    ),
+                ],
+                return_value: Unit,
+            },
+        ),
+    },
+    Declaration {
+        mutable: false,
+        name: "f",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [
+                    ExpressionStatement(
+                        Block(
+                            Block {
+                                statements: [],
+                                return_value: NumberLiteral(
+                                    "1",
+                                ),
+                            },
+                        ),
+                    ),
+                ],
+                return_value: Unit,
+            },
+        ),
+    },
+    Declaration {
+        mutable: false,
+        name: "f",
+        datatype: FuncType {
+            parameters: [
+                Parameter {
+                    name: "n",
+                    datatype: Number,
+                },
+            ],
+            return_type: Number,
+        },
+        value: Block(
+            Block {
+                statements: [
+                    ExpressionStatement(
+                        Block(
+                            Block {
+                                statements: [],
+                                return_value: NumberLiteral(
+                                    "1",
+                                ),
+                            },
+                        ),
+                    ),
+                ],
+                return_value: Unit,
             },
         ),
     },

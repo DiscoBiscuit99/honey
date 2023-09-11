@@ -26,8 +26,9 @@ let fib: (n: number) -> number = {
   }
 };
 
+# conditionals (in functions)
 let if_else_test: (n: number) -> number = {
-  if n < 2 {
+  if 1 + n < 2 {
     print(fiz);
     1
   } else if n < 5 {
@@ -39,5 +40,31 @@ let if_else_test: (n: number) -> number = {
   } else {
     print(buz);
     4
+  }
+};
+
+# testings
+
+let f: (n: number) -> number = {
+  {
+    1;
+  };
+};
+
+let f: (n: number) -> number = {
+  {
+    1;
+  }
+};
+
+let f: (n: number) -> number = {
+  {
+    1
+  };
+};
+
+let f: (n: number) -> number = {
+  {
+    1
   }
 };

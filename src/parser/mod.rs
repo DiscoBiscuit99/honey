@@ -311,8 +311,10 @@ impl Parser {
                         statements.push(stmt);
                     } else {
                         self.rewind(save_point);
-                        return_value = self.parse_expression()?;
-                        break;
+                        if let Some(expr) = self.parse_expression().ok() {
+                            return_value = expr;
+                            break;
+                        }
                     };
                 }
             }
