@@ -383,6 +383,7 @@ impl Parser {
             }
             Some(Token::OpenBrace) => {
                 let block = self.parse_block()?;
+                self.expect(Token::SemiColon)?;
                 Ok(Statement::ExpressionStatement(Expression::Block(block)))
             }
             Some(Token::Identifier(_) | Token::NumberLiteral(_)) => {

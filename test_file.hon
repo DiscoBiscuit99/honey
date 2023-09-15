@@ -43,7 +43,7 @@ let if_else_test: (n: number) -> number = {
   }
 };
 
-# testings
+# testings #
 
 let f: (n: number) -> number = {
   {
@@ -67,4 +67,12 @@ let f: (n: number) -> number = {
   {
     1
   }
+};
+
+1;
+a;
+
+{
+  a;
+  1
 };

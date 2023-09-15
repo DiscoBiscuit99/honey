@@ -315,10 +315,14 @@
                     ExpressionStatement(
                         Block(
                             Block {
-                                statements: [],
-                                return_value: NumberLiteral(
-                                    "1",
-                                ),
+                                statements: [
+                                    ExpressionStatement(
+                                        NumberLiteral(
+                                            "1",
+                                        ),
+                                    ),
+                                ],
+                                return_value: Unit,
                             },
                         ),
                     ),

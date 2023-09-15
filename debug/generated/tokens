@@ -338,8 +338,8 @@
     NumberLiteral(
         "1",
     ),
-    CloseBrace,
     SemiColon,
+    CloseBrace,
     CloseBrace,
     SemiColon,
     Let,
