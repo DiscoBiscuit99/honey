@@ -1,3 +1,6 @@
-pub mod lexer;
-pub mod parser;
-pub mod syntax;
+pub mod analysis;
+pub mod structures;
+
+pub mod prelude {
+    pub use crate::analysis::{lexical::lex, syntactical::parse};
+}

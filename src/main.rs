@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use colored::Colorize;
 use structopt::StructOpt;
 
-use honey::{lexer, parser};
+use honey::prelude::*;
 
 #[derive(StructOpt, Debug)]
 #[structopt(
@@ -43,8 +43,8 @@ fn main() {
         std::process::exit(2);
     }
 
-    let tokens = lexer::lex(&source);
-    let program = parser::parse(&tokens);
+    let tokens = lex(&source);
+    let program = parse(&tokens);
 
     if opt.verbose {
         println!(

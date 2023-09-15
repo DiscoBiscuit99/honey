@@ -1,15 +1,17 @@
+// SYNTACTICAL ANALYSIS //
+
 use colored::Colorize;
 
-use crate::syntax::parse_tree::Arguments;
-use crate::syntax::parse_tree::Block;
-use crate::syntax::parse_tree::ConditionalBlock;
-use crate::syntax::parse_tree::Expression;
-use crate::syntax::parse_tree::If;
-use crate::syntax::parse_tree::Param;
-use crate::syntax::parse_tree::Program;
-use crate::syntax::parse_tree::Statement;
-use crate::syntax::parse_tree::Type;
-use crate::syntax::tokens::Token;
+use crate::structures::parse_tree::Arguments;
+use crate::structures::parse_tree::Block;
+use crate::structures::parse_tree::ConditionalBlock;
+use crate::structures::parse_tree::Expression;
+use crate::structures::parse_tree::If;
+use crate::structures::parse_tree::Param;
+use crate::structures::parse_tree::Program;
+use crate::structures::parse_tree::Statement;
+use crate::structures::parse_tree::Type;
+use crate::structures::tokens::Token;
 
 pub fn parse(tokens: &[Token]) -> Program {
     match Parser::new(tokens.to_vec()).parse_program() {
@@ -397,11 +399,9 @@ impl Parser {
 
     pub fn parse_program(&mut self) -> Result<Program, String> {
         let mut program = Vec::new();
-
         while self.peek().is_some() {
             program.push(self.parse_statement()?);
         }
-
         Ok(program)
     }
 }

@@ -1,6 +1,8 @@
+// LEXICAL ANALYSIS //
+
 use std::{iter::Peekable, str::Chars};
 
-use crate::syntax::tokens::Token;
+use crate::structures::tokens::Token;
 
 mod error;
 use error::{err_msg, LexingError};
