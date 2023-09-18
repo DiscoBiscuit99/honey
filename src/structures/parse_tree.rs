@@ -33,8 +33,47 @@ pub struct ConditionalBlock {
 }
 
 #[derive(Debug, Clone)]
+pub enum Signed {
+    Int8(i8),
+    Int16(i16),
+    Int32(i32),
+    Int64(i64),
+    Int128(i128),
+    ISize(isize),
+}
+
+#[derive(Debug, Clone)]
+pub enum Unsigned {
+    UInt8(u8),
+    UInt16(u16),
+    UInt32(u32),
+    UInt64(u64),
+    UInt128(u128),
+    USize(usize),
+}
+
+#[derive(Debug, Clone)]
+pub enum Integer {
+    Signed(Signed),
+    Unsigned(Unsigned),
+}
+
+#[derive(Debug, Clone)]
+pub enum Floating {
+    Float(f32),
+    Double(f64),
+}
+
+#[derive(Debug, Clone)]
+pub enum Numeric {
+    Int(Integer),
+    Float(Floating),
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression {
     NumberLiteral(String),
+    Number(Numeric),
     Identifier(String),
     Addition {
         augend: Box<Expression>,

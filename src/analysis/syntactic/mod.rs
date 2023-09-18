@@ -36,19 +36,6 @@ impl Parser {
         }
     }
 
-    fn expect_err_msg(&self, expected: &Token, actual: Option<&Token>) -> String {
-        let next = if let Some(token) = actual {
-            format!("{}", token)
-        } else {
-            format!("none")
-        };
-        let expected_part = format!("expected {}", expected.to_string().bold());
-        let found_part = format!("found {}", next.to_string().bold());
-        format!("{}, {}", expected_part, found_part)
-            .red()
-            .to_string()
-    }
-
     fn peek(&self) -> Option<&Token> {
         self.tokens.get(self.position)
     }
@@ -70,6 +57,19 @@ impl Parser {
             self.position += 1;
         }
         token
+    }
+
+    fn expect_err_msg(&self, expected: &Token, actual: Option<&Token>) -> String {
+        let next = if let Some(token) = actual {
+            format!("{}", token)
+        } else {
+            format!("none")
+        };
+        let expected_part = format!("expected {}", expected.to_string().bold());
+        let found_part = format!("found {}", next.to_string().bold());
+        format!("{}, {}", expected_part, found_part)
+            .red()
+            .to_string()
     }
 
     fn expect(&mut self, expected: Token) -> Result<(), String> {
@@ -364,15 +364,44 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, String> {
+        // Some(Token::Let | Token::Mut) => {
+        //     let mutable = self.consume() == Some(Token::Mut);
+        //     if let Some(Token::Identifier(name)) = self.consume() {
+        //         self.expect(Token::Colon)?;
+        //         let datatype = self.parse_type()?;
+        //         self.expect(Token::Assignment)?;
+        //         let value = self.parse_expression()?;
+        //         self.expect(Token::SemiColon)?;
+        //         Ok(Statement::Declaration {
+        //             mutable,
+        //             name,
+        //             datatype,
+        //             value,
+        //         })
+        //     } else {
+        //         Err("expected an identifier".to_string())
+        //     }
+        // }
         match self.peek() {
-            Some(Token::Let) | Some(Token::Mut) => {
-                let mutable = self.consume() == Some(Token::Mut);
+            Some(Token::Let) => {
+                self.consume(); // Consume `let`
+
+                // Check for optional 'mut' keyword
+                let mutable = self.peek() == Some(&Token::Mut);
+                if mutable {
+                    self.consume();
+                }
+
+                // Expect an identifier for the variable name
                 if let Some(Token::Identifier(name)) = self.consume() {
                     self.expect(Token::Colon)?;
                     let datatype = self.parse_type()?;
+
                     self.expect(Token::Assignment)?;
                     let value = self.parse_expression()?;
+
                     self.expect(Token::SemiColon)?;
+
                     Ok(Statement::Declaration {
                         mutable,
                         name,

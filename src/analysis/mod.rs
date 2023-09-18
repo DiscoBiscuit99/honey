@@ -1,2 +1,3 @@
 pub mod lexical;
-pub mod syntactical;
+pub mod syntactic;
+pub mod semantic;

@@ -45,6 +45,7 @@ fn main() {
 
     let tokens = lex(&source);
     let program = parse(&tokens);
+    let validator = validate(&program);
 
     if opt.verbose {
         println!(
@@ -60,6 +61,8 @@ fn main() {
         );
 
         println!("{} {:#?}\n", "Parsed program:".bold().blue(), program);
+
+        println!("{}: {:#?}\n", "Validator".bold().green(), validator);
     }
 
     if opt.save_structures {

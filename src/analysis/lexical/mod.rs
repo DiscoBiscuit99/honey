@@ -185,7 +185,7 @@ impl<'s> Lexer<'_> {
         // check if it's a keyword
         match ident.as_str() {
             "let" => self.tokens.push(Token::Let),
-            "mut" => self.tokens.push(Token::Mut),
+            "mutable" => self.tokens.push(Token::Mut),
             "if" => self.tokens.push(Token::If),
             "else" => self.tokens.push(Token::Else),
             "number" => self.tokens.push(Token::NumberKeyword),
