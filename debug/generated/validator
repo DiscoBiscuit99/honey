@@ -1,0 +1,35 @@
+Validator {
+    scope: 0,
+    symbol_table: [
+        {
+            "a": [
+                Variable {
+                    mutable: false,
+                    datatype: Number,
+                    value: Number(
+                        Int(
+                            Signed(
+                                Int64(
+                                    8,
+                                ),
+                            ),
+                        ),
+                    ),
+                },
+                Variable {
+                    mutable: true,
+                    datatype: Number,
+                    value: Number(
+                        Int(
+                            Signed(
+                                Int64(
+                                    1,
+                                ),
+                            ),
+                        ),
+                    ),
+                },
+            ],
+        },
+    ],
+}

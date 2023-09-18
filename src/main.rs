@@ -70,5 +70,7 @@ fn main() {
             .expect("failed to write tokens to file");
         std::fs::write("debug/generated/parse_tree", format!("{:#?}", &program))
             .expect("failed to write parse tree to file");
+        std::fs::write("debug/generated/validator", format!("{:#?}", &validator))
+            .expect("failed to write validator to file");
     }
 }
