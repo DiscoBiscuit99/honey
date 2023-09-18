@@ -1,28 +1,30 @@
-[
-    Declaration {
-        mutable: false,
-        name: "a",
-        datatype: Number,
-        value: Addition {
-            augend: Addition {
-                augend: NumberLiteral(
-                    "3",
-                ),
+Program {
+    statements: [
+        Declaration {
+            mutable: false,
+            name: "a",
+            datatype: Number,
+            value: Addition {
+                augend: Addition {
+                    augend: NumberLiteral(
+                        "3",
+                    ),
+                    addend: NumberLiteral(
+                        "1",
+                    ),
+                },
                 addend: NumberLiteral(
-                    "1",
+                    "4",
                 ),
             },
-            addend: NumberLiteral(
-                "4",
+        },
+        Declaration {
+            mutable: true,
+            name: "a",
+            datatype: Number,
+            value: NumberLiteral(
+                "1",
             ),
         },
-    },
-    Declaration {
-        mutable: true,
-        name: "a",
-        datatype: Number,
-        value: NumberLiteral(
-            "1",
-        ),
-    },
-]
+    ],
+}

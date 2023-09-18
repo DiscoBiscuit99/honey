@@ -1,3 +1,9 @@
+use crate::analysis::semantic::parser::Visitor;
+
+pub trait AstNode {
+    fn accept(&self, visitor: &mut dyn Visitor);
+}
+
 #[derive(Debug, Clone)]
 pub enum Type {
     Number,
@@ -8,15 +14,33 @@ pub enum Type {
     },
 }
 
+impl AstNode for Type {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_type(self);
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Param {
     Parameter { name: String, datatype: Type },
+}
+
+impl AstNode for Param {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_param(self);
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Block {
     pub statements: Vec<Statement>,
     pub return_value: Box<Expression>,
+}
+
+impl AstNode for Block {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_block(self);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -26,10 +50,22 @@ pub struct If {
     pub else_block: Option<Block>,
 }
 
+impl AstNode for If {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_if(self);
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ConditionalBlock {
     pub condition: Box<Expression>,
     pub block: Block,
+}
+
+impl AstNode for ConditionalBlock {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_conditional_block(self);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -65,15 +101,21 @@ pub enum Floating {
 }
 
 #[derive(Debug, Clone)]
-pub enum Numeric {
+pub enum Number {
     Int(Integer),
     Float(Floating),
+}
+
+impl AstNode for Number {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_number(self);
+    }
 }
 
 #[derive(Debug, Clone)]
 pub enum Expression {
     NumberLiteral(String),
-    Number(Numeric),
+    Number(Number),
     Identifier(String),
     Addition {
         augend: Box<Expression>,
@@ -124,6 +166,12 @@ pub enum Expression {
     Unit,
 }
 
+impl AstNode for Expression {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_expression(self);
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Statement {
     Declaration {
@@ -140,5 +188,21 @@ pub enum Statement {
     IfStatement(If),
 }
 
-pub type Program = Vec<Statement>;
+impl AstNode for Statement {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_statement(self);
+    }
+}
+
 pub type Arguments = Vec<Expression>;
+
+#[derive(Debug, Clone)]
+pub struct Program {
+    pub statements: Vec<Statement>,
+}
+
+impl AstNode for Program {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_program(self);
+    }
+}
