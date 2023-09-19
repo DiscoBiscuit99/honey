@@ -19,7 +19,7 @@ pub trait Visitor {
     fn visit_program(&mut self, program: &Program) -> Program;
     fn visit_statement(&mut self, statement: &Statement) -> Statement;
     fn visit_expression(&mut self, expression: &Expression) -> Expression;
-    fn visit_number(&mut self, number: &Number);
+    // fn visit_number(&mut self, number: &Number) -> Number;
     fn visit_conditional_block(&mut self, conditional_block: &ConditionalBlock);
     fn visit_if(&mut self, if_statement: &If);
     fn visit_block(&mut self, block: &Block);
@@ -55,7 +55,7 @@ impl Visitor for Validator {
 
     fn visit_expression(&mut self, expression: &Expression) -> Expression {
         match expression {
-            Expression::Unit => expression.clone(),
+            Expression::Nil => expression.clone(),
             Expression::NumberLiteral(literal) => {
                 if let Ok(integer) = literal.parse::<i64>() {
                     Expression::Number(Number::Int(Integer::Signed(Signed::Int64(integer))))
@@ -88,9 +88,9 @@ impl Visitor for Validator {
         }
     }
 
-    fn visit_number(&mut self, number: &Number) {
-        todo!();
-    }
+    // fn visit_number(&mut self, number_literal: &Expression) -> Number {
+    //     todo!();
+    // }
 
     fn visit_conditional_block(&mut self, conditional_block: &ConditionalBlock) {
         todo!()

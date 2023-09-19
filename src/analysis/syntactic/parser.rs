@@ -84,35 +84,55 @@ impl Parser {
     fn parse_type(&mut self) -> Result<Type, String> {
         match self.consume() {
             Some(Token::NumberKeyword) => Ok(Type::Number),
-            Some(Token::UnitKeyword) => Ok(Type::Unit),
-            Some(Token::OpenParen) => {
-                let mut param_types = Vec::new();
-                while self.peek() != Some(&Token::CloseParen) {
-                    let param = self.parse_param()?;
-                    param_types.push(param);
-                    if self.peek() == Some(&Token::Comma) {
-                        self.consume();
-                    }
-                }
-                self.expect(Token::CloseParen)?;
-                self.expect(Token::Arrow)?;
-                let return_type = self.parse_type()?;
-                Ok(Type::FuncType {
-                    parameters: param_types,
-                    return_type: Box::new(return_type),
-                })
-            }
+            Some(Token::IntKeyword) => Ok(Type::Int),
+            Some(Token::Nil) => Ok(Type::Nil),
+            // closure
+            // Some(Token::OpenParen) => {
+            //     let mut param_types = Vec::new();
+            //     while self.peek() != Some(&Token::CloseParen) {
+            //         let param = self.parse_param()?;
+            //         param_types.push(param);
+            //         if self.peek() == Some(&Token::Comma) {
+            //             self.consume();
+            //         }
+            //     }
+            //     self.expect(Token::CloseParen)?;
+            //     self.expect(Token::Arrow)?;
+            //     let return_type = self.parse_type()?;
+            //     Ok(Type::FuncType {
+            //         parameters: param_types,
+            //         return_type: Box::new(return_type),
+            //     })
+            // }
             _ => Err("expected a type".to_string()),
         }
     }
 
-    fn parse_param(&mut self) -> Result<Param, String> {
+    fn parse_single_parameter(&mut self) -> Result<Param, String> {
         if let Some(Token::Identifier(name)) = self.consume() {
             self.expect(Token::Colon)?;
             let datatype = self.parse_type()?;
             Ok(Param::Parameter { name, datatype })
         } else {
             Err("expected an identifier".to_string())
+        }
+    }
+
+    fn parse_parameter_list(&mut self) -> Result<Vec<Param>, String> {
+        match self.consume() {
+            Some(Token::OpenParen) => {
+                let mut param_types = Vec::new();
+                while self.peek() != Some(&Token::CloseParen) {
+                    let param = self.parse_single_parameter()?;
+                    param_types.push(param);
+                    if self.peek() == Some(&Token::Comma) {
+                        self.consume();
+                    }
+                }
+                self.expect(Token::CloseParen)?;
+                Ok(param_types)
+            }
+            _ => Err("expected an parameter list".to_string()),
         }
     }
 
@@ -249,7 +269,11 @@ impl Parser {
     fn parse_expression(&mut self) -> Result<Expression, String> {
         let peeked = self.peek();
         let expr = if let Some(Token::OpenBrace) = peeked {
-            Expression::Block(self.parse_block()?)
+            let block = self.parse_block()?;
+            Expression::Block {
+                statements: block.statements,
+                return_value: block.return_value,
+            }
         } else if let Some(Token::If) = peeked {
             Expression::If(self.parse_if()?)
         } else {
@@ -298,7 +322,7 @@ impl Parser {
     fn parse_block(&mut self) -> Result<Block, String> {
         self.expect(Token::OpenBrace)?; // Expect '{'
 
-        let mut return_value = Expression::Unit;
+        let mut return_value = Expression::Nil;
         let mut statements = Vec::new();
         while let Some(token) = self.peek().cloned() {
             match token {
@@ -360,35 +384,11 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, String> {
-        // Some(Token::Let | Token::Mut) => {
-        //     let mutable = self.consume() == Some(Token::Mut);
-        //     if let Some(Token::Identifier(name)) = self.consume() {
-        //         self.expect(Token::Colon)?;
-        //         let datatype = self.parse_type()?;
-        //         self.expect(Token::Assignment)?;
-        //         let value = self.parse_expression()?;
-        //         self.expect(Token::SemiColon)?;
-        //         Ok(Statement::Declaration {
-        //             mutable,
-        //             name,
-        //             datatype,
-        //             value,
-        //         })
-        //     } else {
-        //         Err("expected an identifier".to_string())
-        //     }
-        // }
         match self.peek() {
-            Some(Token::Let) => {
-                self.consume(); // Consume `let`
+            // variable/constant declaration
+            Some(Token::Let | Token::Const) => {
+                let mutable = self.consume() == Some(Token::Const);
 
-                // Check for optional 'mut' keyword
-                let mutable = self.peek() == Some(&Token::Mut);
-                if mutable {
-                    self.consume();
-                }
-
-                // Expect an identifier for the variable name
                 if let Some(Token::Identifier(name)) = self.consume() {
                     self.expect(Token::Colon)?;
                     let datatype = self.parse_type()?;
@@ -408,11 +408,43 @@ impl Parser {
                     Err("expected an identifier".to_string())
                 }
             }
+            // function declaration
+            Some(Token::PubKeyword | Token::FnKeyword) => {
+                let public = self.peek() == Some(&Token::PubKeyword);
+
+                if public {
+                    // consume the `pub` keyword
+                    self.consume();
+                }
+
+                self.expect(Token::FnKeyword)?;
+
+                if let Some(Token::Identifier(name)) = self.consume() {
+                    let parameters = self.parse_parameter_list()?;
+                    self.expect(Token::Colon)?;
+                    let return_type = self.parse_type()?; // return type of the function
+                    let body = self.parse_block()?;
+                    Ok(Statement::FuncDeclaration {
+                        public,
+                        name,
+                        parameters,
+                        return_type,
+                        body,
+                    })
+                } else {
+                    Err("expected an identifier".to_string())
+                }
+            }
+            // block
             Some(Token::OpenBrace) => {
                 let block = self.parse_block()?;
-                self.expect(Token::SemiColon)?;
-                Ok(Statement::ExpressionStatement(Expression::Block(block)))
+                //self.expect(Token::SemiColon)?;
+                Ok(Statement::ExpressionStatement(Expression::Block {
+                    statements: block.statements,
+                    return_value: block.return_value,
+                }))
             }
+            // re-assignment
             Some(Token::Identifier(_) | Token::NumberLiteral(_)) => {
                 let expression = self.parse_expression()?;
                 self.expect(Token::SemiColon)?;

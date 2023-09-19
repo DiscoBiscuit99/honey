@@ -7,7 +7,8 @@ pub trait AstNode {
 #[derive(Debug, Clone)]
 pub enum Type {
     Number,
-    Unit,
+    Int,
+    Nil,
     FuncType {
         parameters: Vec<Param>,
         return_type: Box<Type>,
@@ -28,18 +29,6 @@ pub enum Param {
 impl AstNode for Param {
     fn accept(&self, visitor: &mut dyn Visitor) {
         visitor.visit_param(self);
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Block {
-    pub statements: Vec<Statement>,
-    pub return_value: Box<Expression>,
-}
-
-impl AstNode for Block {
-    fn accept(&self, visitor: &mut dyn Visitor) {
-        visitor.visit_block(self);
     }
 }
 
@@ -65,6 +54,18 @@ pub struct ConditionalBlock {
 impl AstNode for ConditionalBlock {
     fn accept(&self, visitor: &mut dyn Visitor) {
         visitor.visit_conditional_block(self);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Block {
+    pub statements: Vec<Statement>,
+    pub return_value: Box<Expression>,
+}
+
+impl AstNode for Block {
+    fn accept(&self, visitor: &mut dyn Visitor) {
+        visitor.visit_block(self);
     }
 }
 
@@ -106,11 +107,11 @@ pub enum Number {
     Float(Floating),
 }
 
-impl AstNode for Number {
-    fn accept(&self, visitor: &mut dyn Visitor) {
-        visitor.visit_number(self);
-    }
-}
+// impl AstNode for Number {
+//     fn accept(&self, visitor: &mut dyn Visitor) {
+//         visitor.visit_number(self);
+//     }
+// }
 
 #[derive(Debug, Clone)]
 pub enum Expression {
@@ -161,9 +162,12 @@ pub enum Expression {
         name: String,
         arguments: Vec<Expression>,
     },
-    Block(Block),
+    Block {
+        statements: Vec<Statement>,
+        return_value: Box<Expression>,
+    },
     If(If),
-    Unit,
+    Nil,
 }
 
 impl AstNode for Expression {
@@ -183,6 +187,13 @@ pub enum Statement {
     ReAssignment {
         name: String,
         value: Expression,
+    },
+    FuncDeclaration {
+        public: bool,
+        name: String,
+        parameters: Vec<Param>,
+        return_type: Type,
+        body: Block,
     },
     ExpressionStatement(Expression),
     IfStatement(If),

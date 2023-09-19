@@ -16,13 +16,25 @@ struct Opt {
     #[structopt()]
     file: String,
 
-    /// Prints a representation of all the intermediary steps.
-    #[structopt(short = "v", long = "verbose")]
+    /// Prints a representation of all steps of the compilation (as specified by flags).
+    #[structopt(short = "i", long = "info")]
     verbose: bool,
 
     /// Outputs the generated structures to a file.
     #[structopt(short = "s", long = "save")]
     save_structures: bool,
+
+    /// Turns on lexical analysis.
+    #[structopt(short = "l", long = "lex")]
+    lex: bool,
+
+    /// Turns on syntactic analysis (requires lexical analysis).
+    #[structopt(short = "p", long = "parse")]
+    parse: bool,
+
+    /// Turns on semantic analysis (requires both lexical and syntactic).
+    #[structopt(short = "v", long = "validate")]
+    validate: bool,
 }
 
 fn main() {
@@ -43,26 +55,37 @@ fn main() {
         std::process::exit(2);
     }
 
-    let tokens = lex(&source);
-    let program = parse(&tokens);
-    let validator = validate(&program);
+    let tokens = if opt.lex { Some(lex(&source)) } else { None };
+
+    let program = if tokens.is_some() && opt.parse {
+        Some(parse(&tokens.clone().unwrap()))
+    } else {
+        None
+    };
+
+    let validator = if program.is_some() && opt.validate {
+        Some(validate(&program.clone().unwrap()))
+    } else {
+        None
+    };
 
     if opt.verbose {
-        println!(
-            "\n{}\n\n{}\n------------\n",
-            "File contents:".bold().yellow(),
-            source,
-        );
+        println!("\n{}\n\n{}", "File contents:".bold().yellow(), source,);
 
-        println!(
-            "{} {:#?}\n\n------------\n",
-            "Tokens:".bold().green(),
-            tokens
-        );
+        if opt.lex {
+            println!("------------\n");
+            println!("{} {:#?}\n", "Tokens:".bold().green(), tokens);
+        }
 
-        println!("{} {:#?}\n", "Parsed program:".bold().blue(), program);
+        if opt.parse {
+            println!("------------\n");
+            println!("{} {:#?}\n", "Parsed program:".bold().blue(), program);
+        }
 
-        println!("{}: {:#?}\n", "Validator".bold().green(), validator);
+        if opt.validate {
+            println!("\n------------");
+            println!("{}: {:#?}\n", "Validator".bold().green(), validator);
+        }
     }
 
     if opt.save_structures {
@@ -70,7 +93,7 @@ fn main() {
             .expect("failed to write tokens to file");
         std::fs::write("debug/generated/parse_tree", format!("{:#?}", &program))
             .expect("failed to write parse tree to file");
-        std::fs::write("debug/generated/validator", format!("{:#?}", &validator))
-            .expect("failed to write validator to file");
+        // std::fs::write("debug/generated/validator", format!("{:#?}", &validator))
+        //     .expect("failed to write validator to file");
     }
 }

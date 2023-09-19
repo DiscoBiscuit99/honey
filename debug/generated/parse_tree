@@ -1,30 +1,70 @@
-Program {
-    statements: [
-        Declaration {
-            mutable: false,
-            name: "a",
-            datatype: Number,
-            value: Addition {
-                augend: Addition {
-                    augend: NumberLiteral(
-                        "3",
-                    ),
-                    addend: NumberLiteral(
-                        "1",
-                    ),
+Some(
+    Program {
+        statements: [
+            FuncDeclaration {
+                public: false,
+                name: "main",
+                parameters: [],
+                return_type: Nil,
+                body: Block {
+                    statements: [
+                        ExpressionStatement(
+                            Block {
+                                statements: [
+                                    Declaration {
+                                        mutable: false,
+                                        name: "x",
+                                        datatype: Number,
+                                        value: NumberLiteral(
+                                            "0",
+                                        ),
+                                    },
+                                    Declaration {
+                                        mutable: false,
+                                        name: "y",
+                                        datatype: Number,
+                                        value: NumberLiteral(
+                                            "0",
+                                        ),
+                                    },
+                                ],
+                                return_value: Nil,
+                            },
+                        ),
+                        Declaration {
+                            mutable: false,
+                            name: "a",
+                            datatype: Int,
+                            value: NumberLiteral(
+                                "0",
+                            ),
+                        },
+                        ExpressionStatement(
+                            Block {
+                                statements: [
+                                    Declaration {
+                                        mutable: true,
+                                        name: "b",
+                                        datatype: Number,
+                                        value: NumberLiteral(
+                                            "0",
+                                        ),
+                                    },
+                                ],
+                                return_value: Addition {
+                                    augend: Identifier(
+                                        "a",
+                                    ),
+                                    addend: Identifier(
+                                        "b",
+                                    ),
+                                },
+                            },
+                        ),
+                    ],
+                    return_value: Nil,
                 },
-                addend: NumberLiteral(
-                    "4",
-                ),
             },
-        },
-        Declaration {
-            mutable: true,
-            name: "a",
-            datatype: Number,
-            value: NumberLiteral(
-                "1",
-            ),
-        },
-    ],
-}
+        ],
+    },
+)

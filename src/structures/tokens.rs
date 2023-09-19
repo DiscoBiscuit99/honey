@@ -2,13 +2,15 @@ use colored::Colorize;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
+    Nil,
     Let,
-    Mut,
+    Const,
     If,
     Else,
     NumberKeyword,
-    UnitKeyword,
-    WhereKeyword, // 🤔
+    IntKeyword,
+    PubKeyword,
+    FnKeyword,
     Assignment,
     Equal,
     NotEqual,
@@ -36,13 +38,15 @@ pub enum Token {
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Token::Nil => write!(f, "keyword '{}'", "nil".bold()),
             Token::Let => write!(f, "keyword '{}'", "let".bold()),
-            Token::Mut => write!(f, "keyword '{}'", "mut".bold()),
+            Token::Const => write!(f, "keyword '{}'", "const".bold()),
             Token::If => write!(f, "keyword '{}'", "if".bold()),
             Token::Else => write!(f, "keyword '{}'", "else".bold()),
             Token::NumberKeyword => write!(f, "keyword '{}'", "number".bold()),
-            Token::UnitKeyword => write!(f, "keyword '{}'", "unit".bold()),
-            Token::WhereKeyword => write!(f, "where '{}'", "where".bold()),
+            Token::IntKeyword => write!(f, "keyword '{}'", "int".bold()),
+            Token::PubKeyword => write!(f, "keyword '{}'", "pub".bold()),
+            Token::FnKeyword => write!(f, "keyword '{}'", "fn".bold()),
             Token::Assignment => write!(f, "assignment '{}'", "=".bold()),
             Token::Negate => write!(f, "negation '{}'", "!".bold()),
             Token::Equal => write!(f, "equal '{}'", "==".bold()),

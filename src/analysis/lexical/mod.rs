@@ -184,12 +184,14 @@ impl<'s> Lexer<'_> {
         }
         // check if it's a keyword
         match ident.as_str() {
+            "nil" => self.tokens.push(Token::Nil),
             "let" => self.tokens.push(Token::Let),
-            "mutable" => self.tokens.push(Token::Mut),
+            "const" => self.tokens.push(Token::Const),
             "if" => self.tokens.push(Token::If),
             "else" => self.tokens.push(Token::Else),
             "number" => self.tokens.push(Token::NumberKeyword),
-            "unit" => self.tokens.push(Token::UnitKeyword),
+            "int" => self.tokens.push(Token::IntKeyword),
+            "fn" => self.tokens.push(Token::FnKeyword),
             _ => self.tokens.push(Token::Identifier(ident)),
         }
     }
