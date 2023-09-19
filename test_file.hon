@@ -90,8 +90,3 @@ fn Stack(T: comptime type): type {
 #const f: (n: number) -> nil = {
 #  # body of function `f`
 #};
-
-# const Pet: struct = {
-#   name: string,
-#   age: int,
-# };
