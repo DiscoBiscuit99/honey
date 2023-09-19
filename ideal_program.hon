@@ -19,13 +19,71 @@
 # if we choose to do it this way, that probably means that the option and result types should be part of the language's standard library.
 # thus, we should have a way to import that.
 
+# importing the result and maybe types from the standard library
 use std.result.Result;
 use std.option.Maybe;
 
-let source: comptime string = "let a: number = 0;";
+# alternatively
+let Result: (T: comptime type, E: comptime type) -> type = {
+  enum {
+    Ok(T),
+    Err(E),
+
+    let pub is_ok: (self: *Result) -> bool = {
+      match self {
+        Result.Ok(_) then true,
+        Result.Err(_) then false,
+      }
+    };
+
+    let pub is_err: (self: *Result) -> bool = {
+      match self {
+        Result.Ok(_) then false,
+        Result.Err(_) then true,
+      }
+    };
+
+    let pub unwrap: (self: *Result) -> T = {
+      match self {
+        Result.Ok(value) then value,
+        Result.Err(_) then panic("Called unwrap on Err value"),
+      }
+    };
+  }
+};
+
+let Maybe: (T: comptime type) -> type = {
+  enum {
+    Some(T),
+    None,
+
+    let pub is_some: (self: *Maybe) -> bool = {
+      match self {
+        Maybe.Some(_) then true,
+        Maybe.None then false,
+      }
+    };
+
+    let pub is_none: (self: *Maybe) -> bool = {
+      match self {
+        Maybe.Some(_) then false,
+        Maybe.None then true,
+      }
+    };
+
+    let pub unwrap: (self: *Maybe) -> T = {
+      match self {
+        Maybe.Some(value) then value,
+        Maybe.None then panic("Called unwrap on None value"),
+      }
+    };
+  }
+};
+
+let source: string = "let a: number = 0;";
 
 # entry point of the program
-let main: () -> nil {
+let main: () -> nil = {
   let tokens: []Token = Lexer.parse(source);
 };
 
@@ -50,7 +108,7 @@ let Lexer: struct = {
   };
 
   let public parse: (input: string) -> []Token ! LexingError = {
-    let mutable lexer: Lexer = Lexer.new(input);
+    let lexer: mutable Lexer = Lexer.new(input);
 
     while lexer.peek()? {
       let next: char =
@@ -75,52 +133,52 @@ let Lexer: struct = {
   };
 
   let new: (input: string) -> Lexer = {
-    .{
+    struct {
       input,
       position = 0,
       tokens = [],
     }
   };
 
-  let peek: (self: &Lexer) -> char? = {
+  let peek: (self: *mutable Lexer) -> char? = {
     self.input[self.position]
   };
 
-  let consume: (self: &Lexer) -> char? = {
+  let consume: (self: *mutable Lexer) -> char? = {
     let next: char = self.input[self.position];
     self.position += 1;
     next
   };
 
-  let parse_numeric(self: &Lexer) -> nil ! LexingError {
+  let parse_numeric: (self: *mutable Lexer) -> nil ! LexingError = {
     todo();
-  }
+  };
 
-  let parse_identifier(self: &Lexer) -> nil ! LexingError {
+  let parse_identifier: (self: *mutable Lexer) -> nil ! LexingError = {
     todo();
-  }
+  };
 
-  let parse_colon(self: &Lexer) -> nil ! LexingError {
+  let parse_colon: (self: *mutable Lexer) -> nil ! LexingError = {
     let next: char = self.consume() ! LexingError.Failed;
     if next != ':' {
       return LexingError.Failed;
     }
     self.tokens.push(Token.Colon);
-  }
+  };
 
-  let parse_semicolon(self: &Lexer) -> nil ! LexingError {
+  let parse_semicolon: (self: *mutable Lexer) -> nil ! LexingError = {
     let next: char = self.consume() ! LexingError.Failed;
     if next != ';' {
       return LexingError.Failed;
     }
     self.tokens.push(Token.SemiColon);
-  }
+  };
 
-  let parse_equal(self: &Lexer) -> nil ! LexingError {
+  let parse_equal: (self: *mutable Lexer) -> nil ! LexingError = {
     let next: char = self.consume() ! LexingError.Failed;
     if next != '=' {
       return LexingError.Failed;
     }
     self.tokens.push(Token.Equal);
-  }
+  };
 };
