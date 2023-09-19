@@ -1,0 +1,59 @@
+# closure or function?
+let main: () -> nil = {
+  
+};
+
+# maybe a function could look as follows (?)
+fn main() -> nil {
+}
+
+let Pet: struct = {
+  name: string,
+  age: uint,
+
+  pub fn new(name: string, age: uint) -> Pet {
+    struct {
+      name,
+      age,
+    }
+  }
+
+  let pub new: (name: string, age: uint) -> Pet = {
+    struct {
+      name,
+      age,
+    }
+  };
+};
+
+
+
+
+pub fn new(name: string, age: uint) Pet {
+  struct {
+    name,
+    age,
+  }
+}
+
+pub fn new(name: string, age: uint): Pet {
+  struct {
+    name,
+    age,
+  }
+}
+
+pub fn new(name: string, age: uint) -> Pet {
+  struct {
+    name,
+    age,
+  }
+}
+
+let pub new: (name: string, age: uint) -> Pet = {
+  struct {
+    name,
+    age,
+  }
+};
+

@@ -20,6 +20,72 @@ fn main(): nil {
   }
 }
 
+# type aliasing ...
+const Strings = []string;
+
+# ... from which follows struct declarations
+const Pet = struct {
+  name: string,
+  age: uint,
+
+  pub fn init(name: string): Pet {
+    .{
+      name,
+      age = 0,
+    }
+  }
+};
+
+# and enums
+const PetTypes = enum {
+  Dog,
+  Cat,
+  Emu,
+  Wife,
+};
+
+# more enums
+const Token = enum {
+  Let,
+  Some,
+  Identifier(string),
+  Be,
+  Value(Maybe),
+}
+
+# generic enums (by factory function)
+fn Maybe(T: comptime type): type {
+  enum {
+    Some(T),
+    None,
+  }
+}
+
+# generic structs (by factory function)
+fn Stack(T: comptime type): type {
+  .{
+    items: []T,
+    len: usize,
+
+    pub fn init(): Stack(T) {
+      .{
+        items = [],
+        len = 0,
+      }
+    } 
+
+    pub fn push(self: *Stack(T), item: T): nil {
+      self.items[self.len] = item;
+      self.len += 1;
+    }
+
+    pub fn pop(self: *Stack(T)): nil {
+      self.len -= 1;
+      self.items[self.len]
+    }
+  }
+}
+
 # todo! (closures)
 #const f: (n: number) -> nil = {
 #  # body of function `f`

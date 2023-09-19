@@ -1,0 +1,12 @@
+fn main() nil {
+  todo();
+}
+
+# immutable variable
+const a: int = 3;
+
+# mutable variable
+let b: int = 3;
+
+# closure type
+let f: (n: int) -> nil = print("{n}");
