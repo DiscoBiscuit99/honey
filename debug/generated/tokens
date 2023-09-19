@@ -1,5 +1,27 @@
 Some(
     [
+        Const,
+        Identifier(
+            "a",
+        ),
+        Colon,
+        NumberKeyword,
+        Assignment,
+        NumberLiteral(
+            "10",
+        ),
+        SemiColon,
+        Let,
+        Identifier(
+            "b",
+        ),
+        Colon,
+        IntKeyword,
+        Assignment,
+        NumberLiteral(
+            "20",
+        ),
+        SemiColon,
         FnKeyword,
         Identifier(
             "main",

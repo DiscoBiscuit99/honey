@@ -1,6 +1,22 @@
 Some(
     Program {
         statements: [
+            Declaration {
+                mutable: true,
+                name: "a",
+                datatype: Number,
+                value: NumberLiteral(
+                    "10",
+                ),
+            },
+            Declaration {
+                mutable: false,
+                name: "b",
+                datatype: Int,
+                value: NumberLiteral(
+                    "20",
+                ),
+            },
             FuncDeclaration {
                 public: false,
                 name: "main",

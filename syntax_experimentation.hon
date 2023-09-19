@@ -1,59 +1,92 @@
-# closure or function?
-let main: () -> nil = {
-  
-};
+# constant variable declaration
+const a: number = 10;
 
-# maybe a function could look as follows (?)
-fn main() -> nil {
+# mutable variable declaration
+let b: int = 20;
+
+fn main(): nil {
+
+  # some block testing
+  {
+    let x: number = 0;
+    let y: number = 0;
+  }
+
+  let a: int = 0;
+
+  {
+    const b: number = 0;
+    a + b
+  }
 }
 
-let Pet: struct = {
+# type aliasing ...
+const Strings = []string;
+
+# ... from which follows struct declarations
+const Pet = struct {
   name: string,
   age: uint,
 
-  pub fn new(name: string, age: uint) -> Pet {
-    struct {
+  pub fn init(name: string): Pet {
+    .{
       name,
-      age,
+      age = 0,
     }
-  }
-
-  let pub new: (name: string, age: uint) -> Pet = {
-    struct {
-      name,
-      age,
-    }
-  };
-};
-
-
-
-
-pub fn new(name: string, age: uint) Pet {
-  struct {
-    name,
-    age,
-  }
-}
-
-pub fn new(name: string, age: uint): Pet {
-  struct {
-    name,
-    age,
-  }
-}
-
-pub fn new(name: string, age: uint) -> Pet {
-  struct {
-    name,
-    age,
-  }
-}
-
-let pub new: (name: string, age: uint) -> Pet = {
-  struct {
-    name,
-    age,
   }
 };
 
+# and enums
+const PetTypes = enum {
+  Dog,
+  Cat,
+  Emu,
+  Wife,
+};
+
+# more enums
+const Token = enum {
+  Let,
+  Some,
+  Identifier(string),
+  Be,
+  Value(Maybe),
+}
+
+# generic enums (by factory function)
+fn Maybe(T: comptime type): type {
+  enum {
+    Some(T),
+    None,
+  }
+}
+
+# generic structs (by factory function)
+fn Stack(T: comptime type): type {
+  .{
+    items: []T,
+    len: usize,
+
+    pub fn init(): Stack(T) {
+      .{
+        items = [],
+        len = 0,
+      }
+    } 
+
+    pub fn push(self: *Stack(T), item: T): nil {
+      self.items[self.len] = item;
+      self.len += 1;
+    }
+
+    pub fn pop(self: *Stack(T)): nil {
+      self.len -= 1;
+      self.items[self.len]
+    }
+  }
+}
+
+# todo! (closures)
+#const f: (n: number) -> nil = {
+#  # body of function `f`
+#};
